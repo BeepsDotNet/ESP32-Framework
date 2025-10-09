@@ -429,7 +429,8 @@ bool loadWiFiCredentials() {
         if (startQuote != -1 && endQuote != -1 && startQuote != endQuote) {
           ssid = line.substring(startQuote + 1, endQuote);
           ssidFound = true;
-          Serial.println("SSID found: " + ssid);
+          String maskedSSID = ssid.substring(0, 3) + "******";
+          Serial.println("SSID found: " + maskedSSID);
         }
       }
       // Parse password line
@@ -526,7 +527,8 @@ void connectToWiFi() {
 
   while (true) {
     retryCount++;
-    Serial.println("WiFi connection attempt #" + String(retryCount) + " - Connecting to: " + ssid);
+    String maskedSSID = ssid.substring(0, 3) + "******";
+    Serial.println("WiFi connection attempt #" + String(retryCount) + " - Connecting to: " + maskedSSID);
 
     // Disable and re-enable WiFi adapter
     Serial.println("Disabling WiFi adapter...");
@@ -538,8 +540,8 @@ void connectToWiFi() {
     WiFi.disconnect();
     delay(2000);
 
-    // Show WiFi configuration details
-    Serial.println("WiFi Config - SSID: '" + ssid + "', Password length: " + String(password.length()) + " chars");
+    // Show WiFi configuration details (SSID masked for security)
+    Serial.println("WiFi Config - SSID: '" + maskedSSID + "', Password length: " + String(password.length()) + " chars");
 
     WiFi.begin(ssid.c_str(), password.c_str());
     Serial.println("WiFi connection initiated...");
@@ -592,7 +594,8 @@ void connectToWiFi() {
       Serial.println("Final status: " + String(finalStatus));
 
       if (finalStatus == WL_NO_SSID_AVAIL) {
-        Serial.println("ERROR: Network '" + ssid + "' not found. Retrying...");
+        String maskedSSID = ssid.substring(0, 3) + "******";
+        Serial.println("ERROR: Network '" + maskedSSID + "' not found. Retrying...");
       } else if (finalStatus == WL_CONNECT_FAILED) {
         Serial.println("ERROR: Connection failed. Check password and network security settings. Retrying...");
       } else {
@@ -740,7 +743,13 @@ bool loadAPIKey() {
     lichessAPI.begin(lichessApiKey.c_str());
     sessionManager.setAPIToken(lichessApiKey.c_str());  // Set API token for all session instances
     Serial.println("Chess API key loaded and configured successfully");
-    Serial.printf("Chess API key: %s (length: %d chars)\n", lichessApiKey.c_str(), lichessApiKey.length());
+
+    // Mask API key for security (show first 3 chars + asterisks)
+    String maskedKey = lichessApiKey.substring(0, 3);
+    for (int i = 3; i < lichessApiKey.length(); i++) {
+      maskedKey += "*";
+    }
+    Serial.printf("Chess API key: %s (length: %d chars)\n", maskedKey.c_str(), lichessApiKey.length());
   } else {
     Serial.println("WARNING: No Chess API key found in API_Keys.MD!");
   }

@@ -32,7 +32,7 @@ void WebRTCHandler::begin(AsyncWebServer* server) {
             // Check if this is the last chunk
             if (index + len == total) {
                 // Process complete body
-                DynamicJsonDocument doc(2048);
+                JsonDocument doc;
                 DeserializationError error = deserializeJson(doc, bodyBuffer);
 
                 // Clear buffer for next request
@@ -99,9 +99,9 @@ void WebRTCHandler::handlePoll(AsyncWebServerRequest* request) {
     if (_messageQueues.find(gameCode) == _messageQueues.end()) {
         // No messages yet, return empty array
         Serial.printf("No message queue found for game %s\n", gameCode.c_str());
-        DynamicJsonDocument doc(512);
+        JsonDocument doc;
         doc["success"] = true;
-        JsonArray messages = doc.createNestedArray("messages");
+        JsonArray messages = doc["messages"].to<JsonArray>();
 
         String response;
         serializeJson(doc, response);
@@ -113,9 +113,9 @@ void WebRTCHandler::handlePoll(AsyncWebServerRequest* request) {
     std::vector<SignalingMessage>& messages = _messageQueues[gameCode];
     Serial.printf("Queue has %d total messages\n", messages.size());
 
-    DynamicJsonDocument doc(4096);
+    JsonDocument doc;
     doc["success"] = true;
-    JsonArray msgArray = doc.createNestedArray("messages");
+    JsonArray msgArray = doc["messages"].to<JsonArray>();
 
     // Collect messages for this peer (sent by the OTHER peer)
     auto it = messages.begin();
@@ -125,7 +125,7 @@ void WebRTCHandler::handlePoll(AsyncWebServerRequest* request) {
 
         if (it->fromPeer != asPeer) {
             // This message is for us (sent by other peer)
-            DynamicJsonDocument msgDoc(2048);
+            JsonDocument msgDoc;
             deserializeJson(msgDoc, it->data);
             msgArray.add(msgDoc.as<JsonObject>());
 
@@ -187,7 +187,7 @@ void WebRTCHandler::cleanupOldMessages() {
 }
 
 void WebRTCHandler::sendJSONResponse(AsyncWebServerRequest* request, int code, const String& message, bool success) {
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     doc["success"] = success;
     doc["message"] = message;
 
@@ -197,7 +197,7 @@ void WebRTCHandler::sendJSONResponse(AsyncWebServerRequest* request, int code, c
 }
 
 void WebRTCHandler::sendErrorResponse(AsyncWebServerRequest* request, int code, const String& error) {
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     doc["success"] = false;
     doc["error"] = error;
 
