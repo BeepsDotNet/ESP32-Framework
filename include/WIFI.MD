@@ -1,2 +1,2 @@
-ssid = "dRouter"
-password = "WEWENTTOTHESTORE"
+ssid = "*******"
+password = "********"
