@@ -1,0 +1,40 @@
+# Sensitive files with API keys and tokens
+notes.txt
+lichess-test.html
+include/API_Keys.MD
+include/WIFI.MD
+admin-auth.md
+WIFI.MD
+API_Keys.MD
+GEMINI-API-KEY.MD
+Lichess API Key.png
+
+# Debug logs (may contain sensitive data)
+debug_log_*.txt
+debug-log-*.txt
+session-log-*.txt
+compact.log
+console.log
+
+# LiChess API Test Application
+LiChess API Test Application/
+
+# PlatformIO
+.pio/
+.vscode/
+.clang_complete
+.gcc-flags.json
+
+# Build artifacts
+*.bin
+*.elf
+*.map
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*~

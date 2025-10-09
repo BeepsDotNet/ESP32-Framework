@@ -1,0 +1,54 @@
+Session Control Log
+Exported: 10/8/2025, 10:36:31 AM
+Total Messages: 49
+================================================================================
+
+[10:35:29 AM] stockfish.wasm streaming complete
+[10:35:45 AM] SIZING INFO: File: /chess-app.html, Size: 105701 bytes
+[10:35:45 AM] SIZING INFO: Using chunked transfer encoding (no Content-Length header)
+[10:35:45 AM] FAST CHUNK: File opened, size: 105701 bytes
+[10:35:45 AM] FAST CHUNK: Skipping fast chunk, will stream file directly
+[10:35:45 AM] CHUNK 0: Read 5615 bytes (offset: 5615/105701)
+[10:35:45 AM] CHUNK 5615: Read 1378 bytes (offset: 6993/105701)
+[10:35:45 AM] CHUNK 6993: Read 1378 bytes (offset: 8371/105701)
+[10:35:45 AM] CHUNK 8371: Read 2980 bytes (offset: 11351/105701)
+[10:35:45 AM] CHUNK 11351: Read 1378 bytes (offset: 12729/105701)
+[10:35:46 AM] CHUNK 12729: Read 1378 bytes (offset: 14107/105701)
+[10:35:46 AM] CHUNK 14107: Read 4366 bytes (offset: 18473/105701)
+[10:35:46 AM] CHUNK 18473: Read 1378 bytes (offset: 19851/105701)
+[10:35:46 AM] CHUNK 19851: Read 4366 bytes (offset: 24217/105701)
+[10:35:46 AM] CHUNK 24217: Read 1378 bytes (offset: 25595/105701)
+[10:35:46 AM] CHUNK 25595: Read 4366 bytes (offset: 29961/105701)
+[10:35:46 AM] CHUNK 29961: Read 1378 bytes (offset: 31339/105701)
+[10:35:46 AM] CHUNK 31339: Read 2764 bytes (offset: 34103/105701)
+[10:35:46 AM] CHUNK 34103: Read 2980 bytes (offset: 37083/105701)
+[10:35:46 AM] CHUNK 37083: Read 2764 bytes (offset: 39847/105701)
+[10:35:46 AM] CHUNK 39847: Read 2980 bytes (offset: 42827/105701)
+[10:35:46 AM] CHUNK 42827: Read 2764 bytes (offset: 45591/105701)
+[10:35:46 AM] CHUNK 45591: Read 2980 bytes (offset: 48571/105701)
+[10:35:46 AM] CHUNK 48571: Read 2764 bytes (offset: 51335/105701)
+[10:35:46 AM] CHUNK 51335: Read 2980 bytes (offset: 54315/105701)
+[10:35:46 AM] CHUNK 54315: Read 2764 bytes (offset: 57079/105701)
+[10:35:46 AM] CHUNK 57079: Read 2980 bytes (offset: 60059/105701)
+[10:35:46 AM] CHUNK 60059: Read 2764 bytes (offset: 62823/105701)
+[10:35:46 AM] CHUNK 62823: Read 2980 bytes (offset: 65803/105701)
+[10:35:46 AM] CHUNK 65803: Read 2764 bytes (offset: 68567/105701)
+[10:35:47 AM] CHUNK 68567: Read 2980 bytes (offset: 71547/105701)
+[10:35:47 AM] CHUNK 71547: Read 2764 bytes (offset: 74311/105701)
+[10:35:47 AM] CHUNK 74311: Read 2980 bytes (offset: 77291/105701)
+[10:35:47 AM] CHUNK 77291: Read 2764 bytes (offset: 80055/105701)
+[10:35:47 AM] CHUNK 80055: Read 2980 bytes (offset: 83035/105701)
+[10:35:47 AM] CHUNK 83035: Read 2764 bytes (offset: 85799/105701)
+[10:35:47 AM] CHUNK 85799: Read 2980 bytes (offset: 88779/105701)
+[10:35:47 AM] CHUNK 88779: Read 2764 bytes (offset: 91543/105701)
+[10:35:47 AM] CHUNK 91543: Read 2980 bytes (offset: 94523/105701)
+[10:35:47 AM] CHUNK 94523: Read 2764 bytes (offset: 97287/105701)
+[10:35:47 AM] CHUNK 97287: Read 2980 bytes (offset: 100267/105701)
+[10:35:47 AM] CHUNK 100267: Read 2764 bytes (offset: 103031/105701)
+[10:35:47 AM] CHUNK 103031: Read 2670 bytes (offset: 105701/105701)
+[10:35:47 AM] CHUNK: File not open, ending stream
+[10:35:48 AM] [10:35:48 AM.164] [192.168.1.159] Resize: winH=901, btnH=71, msgH=40, settingsH=0, availH=650, availW=1326, size=650
+[10:35:50 AM] [10:35:49 AM.828] [192.168.1.159] No saved game state found
+[10:35:51 AM] [10:35:51 AM.365] [192.168.1.159] Resize: winH=1243, btnH=71, msgH=40, settingsH=0, availH=992, availW=984, size=984
+[10:35:51 AM] [10:35:51 AM.536] [192.168.1.159] Resize: winH=901, btnH=100, msgH=40, settingsH=0, availH=621, availW=638, size=621
+[10:35:51 AM] [10:35:51 AM.687] [192.168.1.159] Resize: winH=901, btnH=71, msgH=40, settingsH=0, availH=650, availW=1326, size=650

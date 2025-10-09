@@ -1,0 +1,2715 @@
+Debug Log
+Exported: 10/8/2025, 5:26:23 PM
+Total Lines: 2709
+File Size: 111.38 KB
+================================================================================
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light only">
+    <title>Malcolm's Chess</title>
+    <script>
+        // Global version constant - UPDATE ONLY HERE
+        const APP_VERSION = "v5.7";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chess.js@0.12.0/chess.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js"></script>
+    <style>
+        /* Loading screen - shown until page loads */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a1a;
+            color: #4CAF50;
+            font: bold 48px Arial;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            gap: 30px;
+        }
+        #loading-progress {
+            width: 80%;
+            max-width: 400px;
+            height: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #4CAF50;
+        }
+        #loading-bar {
+            height: 100%;
+            width: 0%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        #loading-text {
+            font-size: 24px;
+        }
+
+        /* Spinner for "Black is Thinking" message */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #4CAF50;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+    <style>
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .button-bar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #2a2a2a;
+            padding: 4px 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #4CAF50;
+            flex-wrap: wrap; /* Allow buttons to wrap on narrow screens */
+        }
+
+        .button-bar h1 {
+            color: #4CAF50;
+            margin-right: 15px;
+            font-size: 20px;
+            white-space: nowrap; /* Prevent title from wrapping */
+        }
+
+        .button-bar button {
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+
+        .button-bar button:nth-of-type(1) { background-color: rgb(128,0,128); }
+        .button-bar button:nth-of-type(2) { background-color: rgb(139,0,0); }
+        .button-bar button:nth-of-type(3) { background-color: rgb(0,100,0); }
+        .button-bar button:nth-of-type(4) { background-color: rgb(218,165,32); }
+        .button-bar button:nth-of-type(5) { background-color: rgb(255,69,0); }
+        .button-bar button:hover { opacity: 0.8; }
+        .button-bar button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+
+        .move-message-container {
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+            border-bottom: 2px solid #4CAF50;
+            margin-bottom: 2px;
+            height: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .message-content {
+            color: #4CAF50;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .chess-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top instead of center */
+            width: 100%;
+            flex: 1;
+            margin: 0;
+            padding: 3px 10px 10px 10px; /* 3px top for minimal gap, 10px sides and bottom */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        :root {
+            --ui-height: 0px;
+        }
+
+        .chessboard {
+            border: 3px solid #8B0000;
+            background: transparent;
+            box-sizing: border-box;
+            margin: 0;
+            /* Size will be set dynamically by JavaScript */
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 0;
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            box-sizing: border-box;
+            aspect-ratio: 1;
+            overflow: hidden;
+        }
+
+        .light { background: #000000; }
+        .dark { background: #4169e1; }
+
+        .light.last-move { background: #2D4A2D; }
+        .dark.last-move { background: #5A8F7A; }
+
+        .selected {
+            box-shadow: inset 0 0 0 4px #4CAF50 !important;
+        }
+
+        .legal-move-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: yellow;
+            border: 1px solid black;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .piece {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+        }
+
+        .piece svg {
+            width: 70%;
+            height: 70%;
+            pointer-events: none;
+        }
+
+        .square-label {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 14px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            display: none;
+        }
+
+        .square-label.show {
+            display: block;
+        }
+
+        svg {
+            color-scheme: light only !important;
+            forced-color-adjust: none !important;
+        }
+
+        svg path, svg g {
+            color-scheme: light only !important;
+            forced-color-adjust: none !important;
+        }
+
+        /* Debug log panel */
+        #debugLog {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #4CAF50;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 8px;
+            overflow-y: auto;
+            border-top: 2px solid #4CAF50;
+            z-index: 100;
+            display: none;
+        }
+
+        #debugLog.visible {
+            display: block;
+        }
+
+        #debugLog div {
+            margin: 2px 0;
+            white-space: pre-wrap;
+        }
+
+        /* Highlight serial logs differently */
+        #debugLog .serial-log {
+            color: #FFA500;  /* Orange for serial logs */
+        }
+
+        #debugLog .browser-log {
+            color: #4CAF50;  /* Green for browser logs */
+        }
+
+        /* Session Control Panel */
+        #sessionControlPanel {
+            position: fixed;
+            left: 0;
+            right: 0;
+            max-height: 70vh;
+            background: rgba(42, 42, 42, 0.98);
+            border-top: 2px solid #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            z-index: 101;
+            overflow-y: auto;
+        }
+
+        #sessionControlPanel h3 {
+            color: #4CAF50;
+        }
+
+        #sessionControlPanel h4 {
+            color: #ffa500;
+        }
+
+        #sessionMessageViewer::-webkit-scrollbar,
+        #debugLogViewer::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sessionMessageViewer::-webkit-scrollbar-track,
+        #debugLogViewer::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        #sessionMessageViewer::-webkit-scrollbar-thumb,
+        #debugLogViewer::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
+        }
+
+        #sessionMessageViewer::-webkit-scrollbar-thumb:hover,
+        #debugLogViewer::-webkit-scrollbar-thumb:hover {
+            background: #5bc75b;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div>Loading Chess...</div>
+        <div id="loading-progress">
+            <div id="loading-bar"></div>
+        </div>
+        <div id="loading-text">0%</div>
+    </div>
+    <div class="button-bar">
+        <h1 id="title">Malcolm's Chess</h1>
+        <button id="newGameBtn" onclick="startNewGame()">New Game</button>
+        <button id="resignBtn" onclick="resignGame()">Resign</button>
+        <button id="undoBtn" onclick="undoMove()" style="background-color: #FF8C00;">Undo</button>
+        <button id="labelsBtn" onclick="toggleLabels()" style="background-color: #4169e1;">Labels</button>
+        <button id="movesBtn" onclick="toggleMoves()" style="background-color: #4169e1;">Moves</button>
+        <button id="fenBtn" onclick="copyFEN()" class="admin-only" style="background-color: #4169e1; display: none;">FEN</button>
+        <button id="adminBtn" onclick="toggleAdmin()" class="admin-only" style="background-color: #4CAF50; display: none;">Admin</button>
+        <button id="resetBtn" onclick="resetSystem()" class="admin-only" style="background-color: #ff6b6b; display: none;">Reset</button>
+        <button id="debugToggleBtn" onclick="toggleDebugLog()" class="admin-only" style="background-color: #2d5016; display: none;">Debug Log</button>
+        <button id="sessionControlBtn" onclick="toggleSessionControl()" class="admin-only" style="background-color: #2d5016; display: none;">Session Control</button>
+        <button id="ejectBtn" onclick="ejectSDCard()" class="admin-only" style="background-color: #2d5016; display: none;">Eject</button>
+        <button id="rebootBtn" onclick="rebootESP32()" class="admin-only" style="background-color: #2d5016; display: none;">Reboot ESP32</button>
+    </div>
+
+    <div class="move-message-container">
+        <div class="message-content" id="moveMessage">Click "New Game" to start</div>
+    </div>
+
+    <!-- Game Mode Selection (Admin only) -->
+    <div id="gameModePanel" class="admin-only" style="padding: 10px 20px; background-color: #2a2a2a; border-bottom: 2px solid #4CAF50; display: none; gap: 15px; align-items: center; justify-content: center;">
+        <label style="color: #4CAF50; font-weight: bold;">Game Mode:</label>
+        <button id="modeLocalBtn" onclick="setGameMode('local')" style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">vs AI</button>
+        <button id="modeAiVsAiBtn" onclick="setGameMode('ai-vs-ai')" style="background-color: #4169e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">AI vs AI</button>
+        <button id="modeHostBtn" onclick="setGameMode('host')" style="background-color: #4169e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Host P2P</button>
+        <button id="modeJoinBtn" onclick="setGameMode('join')" style="background-color: #4169e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Join P2P</button>
+
+        <!-- WebRTC Connection Panel (hidden by default) -->
+        <div id="webrtcPanel" style="display: none; margin-left: 20px; padding-left: 20px; border-left: 2px solid #4CAF50;">
+            <span id="connectionStatus" style="color: #FFA500; font-weight: bold;">●</span>
+            <span id="gameCodeDisplay" style="color: white; font-family: monospace; margin-left: 10px;"></span>
+            <input type="text" id="gameCodeInput" placeholder="Enter game code" style="display: none; width: 150px; padding: 8px; border-radius: 4px; border: 2px solid #4CAF50; background: #1a1a1a; color: white; font-family: monospace;">
+            <button id="connectBtn" onclick="connectToGame()" style="display: none; background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Connect</button>
+        </div>
+    </div>
+
+    <div id="settingsPanel" class="admin-only" style="padding: 10px 20px; background-color: #2a2a2a; border-bottom: 2px solid #4CAF50; display: none; gap: 15px; align-items: center; justify-content: center;">
+        <label style="color: #4CAF50; font-weight: bold;">Difficulty:</label>
+        <input type="range" id="depthSlider" min="1" max="20" value="10" style="width: 150px;" oninput="updateDifficulty(this.value)">
+        <span id="depthValue" style="color: white; min-width: 30px;">10</span>
+        <label style="color: #4CAF50; font-weight: bold; margin-left: 20px;">Custom FEN:</label>
+        <input type="text" id="fenInput" placeholder="Paste FEN position here" style="width: 400px; padding: 8px; border-radius: 4px; border: 2px solid #4CAF50; background: #1a1a1a; color: white; font-family: monospace;">
+        <button onclick="loadCustomFEN()" style="background-color: #4169e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Load FEN</button>
+    </div>
+
+    <div class="chess-container">
+        <div class="chessboard" id="chessboard"></div>
+    </div>
+
+    <div id="debugLog"></div>
+
+    <!-- Session Control Panel -->
+    <div id="sessionControlPanel" style="display: none;">
+        <div style="padding: 20px; background: #2a2a2a; border-top: 2px solid #4CAF50;">
+            <h3 style="margin: 0 0 15px 0; color: #4CAF50;">Session Control</h3>
+
+            <!-- Active Sessions -->
+            <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #555;">
+                <h4 style="margin: 0 0 10px 0; color: #ffa500;">Active Sessions</h4>
+                <div id="sessionsList" style="color: #ddd; font-size: 0.9em;">
+                    <div style="color: #666; text-align: center; padding: 20px;">Loading sessions...</div>
+                </div>
+            </div>
+
+            <!-- Global Controls -->
+            <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #555;">
+                <h4 style="margin: 0 0 10px 0; color: #ffa500;">Global Log Controls</h4>
+
+                <div style="margin: 10px 0;">
+                    <span style="font-weight: bold;">💾 SD Card Writing: </span>
+                    <span id="sdWriteStatus" style="color: #4CAF50;">✅ ENABLED</span>
+                    <button id="sdWriteToggleBtn" onclick="toggleSDWrite()" style="margin-left: 10px; background-color: #4169e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">💾 Disable SD Write</button>
+                </div>
+
+                <div style="margin: 15px 0;">
+                    <button onclick="confirmClearAllLogs()" style="background-color: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">🆕 New Log Session</button>
+                    <small style="color: #888; display: block; margin-top: 5px;">Deletes all logs & starts fresh</small>
+                </div>
+            </div>
+
+            <!-- Live Message Viewer -->
+            <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #555;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #ffa500;">Live Message Viewer</h4>
+                    <div>
+                        <button id="pinButton" onclick="toggleAutoScroll()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-right: 5px;">📌 Pin</button>
+                        <button onclick="clearSessionViewer()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-right: 5px;">🗑️ Clear</button>
+                        <button onclick="downloadSessionMessages()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em;">⬇️ Download</button>
+                    </div>
+                </div>
+
+                <div id="sessionMessageViewer" style="overflow-y: auto; background: #0a0a0a; border: 1px solid #555; border-radius: 4px; padding: 10px; font-family: 'Courier New', monospace; font-size: 0.85em; height: 400px; color: #ddd;">
+                    <div style="color: #666; text-align: center; padding: 50px;">Waiting for messages...</div>
+                </div>
+
+                <div style="margin-top: 8px; font-size: 0.85em; color: #aaa;">
+                    SD Card: <span id="viewerSDStatus">✅ Writing</span> |
+                    Messages: <span id="messageCount">0</span> |
+                    Rate: <span id="messageRate">0.0/sec</span>
+                </div>
+            </div>
+
+            <!-- Debug Log Viewer -->
+            <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #555; margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #ffa500;">Debug Log Viewer</h4>
+                    <div>
+                        <button id="debugLogPinButton" onclick="toggleDebugLogAutoScroll()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-right: 5px;">📌 Pin</button>
+                        <button onclick="reloadDebugLog()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-right: 5px;">🔄 Reload</button>
+                        <button onclick="downloadDebugLog()" style="background-color: #4169e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em;">⬇️ Download</button>
+                    </div>
+                </div>
+
+                <div id="debugLogViewer" style="overflow-y: auto; background: #0a0a0a; border: 1px solid #555; border-radius: 4px; padding: 10px; font-family: 'Courier New', monospace; font-size: 0.85em; height: 400px; color: #ddd;">
+                    <div style="color: #666; text-align: center; padding: 50px;">Click "Reload" to load debug log...</div>
+                </div>
+
+                <div style="margin-top: 8px; font-size: 0.85em; color: #aaa;">
+                    Lines Loaded: <span id="debugLogLineCount">0</span> |
+                    File Size: <span id="debugLogFileSize">0 KB</span> |
+                    Status: <span id="debugLogStatus">Not Loaded</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging system - unified for both browser and serial logs
+        const debugLogs = [];
+        const MAX_DEBUG_LOGS = 30;  // Increased to show more interleaved logs
+        let serialLogSource = null;
+        let clientIP = 'unknown';  // Store client IP for logging
+
+        // Fetch client IP on page load
+        fetch('/api/client-ip')
+            .then(response => response.text())
+            .then(ip => {
+                clientIP = ip;
+            })
+            .catch(err => {
+                console.error('Failed to fetch client IP:', err);
+            });
+
+        function debugLog(message, source = 'browser') {
+            // Only log if debug logging is enabled
+            if (!gameState.debugLogEnabled) {
+                return;
+            }
+
+            const timestamp = new Date().toLocaleTimeString() + '.' + String(Date.now()).slice(-3);
+            const ipPrefix = source === 'browser' ? `[${clientIP}] ` : '';
+            const prefix = source === 'serial' ? '[SERIAL] ' : '';
+            const logEntry = {
+                text: `[${timestamp}] ${ipPrefix}${prefix}${message}`,
+                source: source
+            };
+
+            debugLogs.push(logEntry);
+            if (debugLogs.length > MAX_DEBUG_LOGS) {
+                debugLogs.shift();
+            }
+            updateDebugDisplay();
+            console.log(logEntry.text); // Also log to console for desktop debugging
+
+            // Only send browser logs to server (serial logs already on server)
+            if (source === 'browser') {
+                // Send without IP prefix - server will add it
+                const logForServer = `[${timestamp}] ${prefix}${message}`;
+                sendLogToServer(logForServer);
+
+                // Also feed to session control viewer if enabled
+                if (sessionControlEnabled) {
+                    // Don't add IP prefix - it will be added by the server and sent back via serial stream
+                    // This prevents duplicate IP addresses in the session control log
+                }
+            }
+        }
+
+        function sendLogToServer(logEntry) {
+            // Use sendBeacon for reliable logging even during page unload
+            // Include sessionId as query parameter
+            const url = gameState.sessionId ? `/api/log?sessionId=${gameState.sessionId}` : '/api/log';
+            const blob = new Blob([logEntry + '\n'], { type: 'text/plain' });
+            navigator.sendBeacon(url, blob);
+        }
+
+        // Connect to serial log stream
+        function connectSerialLogStream() {
+            serialLogSource = new EventSource('/api/serial-stream');
+
+            serialLogSource.addEventListener('serial-log', (e) => {
+                debugLog(e.data, 'serial');
+
+                // Also feed to session control viewer if enabled
+                if (sessionControlEnabled) {
+                    appendSessionMessage(e.data);
+                }
+            });
+
+            serialLogSource.onerror = () => {
+                console.error('Serial log stream error');
+            };
+        }
+
+        // Start serial log stream when page loads
+        connectSerialLogStream();
+
+        function updateDebugDisplay() {
+            const debugDiv = document.getElementById('debugLog');
+            if (debugDiv) {
+                debugDiv.innerHTML = debugLogs.map(log =>
+                    `<div class="${log.source}-log">${log.text}</div>`
+                ).join('');
+                debugDiv.scrollTop = debugDiv.scrollHeight;
+            }
+        }
+
+        async function toggleDebugLog() {
+            // Toggle debug logging state
+            gameState.debugLogEnabled = !gameState.debugLogEnabled;
+
+            const btn = document.getElementById('debugToggleBtn');
+            const debugDiv = document.getElementById('debugLog');
+
+            if (gameState.debugLogEnabled) {
+                // Clear old log file on server when enabling
+                try {
+                    await fetch('/api/logs/clear', { method: 'POST' });
+                } catch (error) {
+                    console.error('Failed to clear logs:', error);
+                }
+
+                // Clear local log display
+                debugLogs.length = 0;
+                updateDebugDisplay();
+
+                // Update button color to green
+                btn.style.backgroundColor = '#4CAF50';
+
+                // Show debug panel
+                if (debugDiv) {
+                    debugDiv.classList.add('visible');
+                }
+
+                debugLog('Debug logging enabled');
+            } else {
+                // Update button color to blue
+                btn.style.backgroundColor = '#2d5016';
+
+                // Hide debug panel
+                if (debugDiv) {
+                    debugDiv.classList.remove('visible');
+                }
+            }
+        }
+
+        // Session Control State
+        let sessionControlEnabled = false;
+        let sessionMessages = [];
+        let sessionAutoScroll = true;
+        let sessionMessageCount = 0;
+        let sessionMessageRateCounter = 0;
+        let sdWriteEnabled = true;
+        let sessionMessageRateInterval = null;
+        let sessionRefreshInterval = null;
+        let activeSessions = [];
+        let sessionFilters = {}; // Track which sessions are filtered (hidden)
+
+        async function toggleSessionControl() {
+            sessionControlEnabled = !sessionControlEnabled;
+
+            const btn = document.getElementById('sessionControlBtn');
+            const panel = document.getElementById('sessionControlPanel');
+
+            if (sessionControlEnabled) {
+                // Update button color to green
+                btn.style.backgroundColor = '#4CAF50';
+
+                // Calculate position below message area
+                const messageContainer = document.querySelector('.move-message-container');
+                if (messageContainer && panel) {
+                    const rect = messageContainer.getBoundingClientRect();
+                    panel.style.top = `${rect.bottom}px`;
+                }
+
+                // Hide non-admin buttons
+                const nonAdminButtons = ['newGameBtn', 'resignBtn', 'undoBtn', 'labelsBtn', 'movesBtn'];
+                nonAdminButtons.forEach(btnId => {
+                    const button = document.getElementById(btnId);
+                    if (button) button.style.display = 'none';
+                });
+
+                // Show session control panel
+                if (panel) {
+                    panel.style.display = 'block';
+                }
+
+                // Fetch initial SD write status
+                await updateSDWriteStatus();
+
+                // Start message rate counter
+                if (sessionMessageRateInterval) {
+                    clearInterval(sessionMessageRateInterval);
+                }
+                sessionMessageRateInterval = setInterval(updateSessionMessageRate, 1000);
+
+                // Connect to serial log stream for live messages
+                if (!serialLogSource) {
+                    connectSerialLogStream();
+                }
+
+                // Fetch and display sessions
+                await fetchActiveSessions();
+
+                // Auto-refresh sessions every 3 seconds
+                if (sessionRefreshInterval) {
+                    clearInterval(sessionRefreshInterval);
+                }
+                sessionRefreshInterval = setInterval(fetchActiveSessions, 3000);
+
+                debugLog('Session Control enabled');
+            } else {
+                // Update button color to dark green
+                btn.style.backgroundColor = '#2d5016';
+
+                // Show non-admin buttons again
+                const nonAdminButtons = ['newGameBtn', 'resignBtn', 'undoBtn', 'labelsBtn', 'movesBtn'];
+                nonAdminButtons.forEach(btnId => {
+                    const button = document.getElementById(btnId);
+                    if (button) button.style.display = '';
+                });
+
+                // Hide session control panel
+                if (panel) {
+                    panel.style.display = 'none';
+                }
+
+                // Stop message rate counter
+                if (sessionMessageRateInterval) {
+                    clearInterval(sessionMessageRateInterval);
+                    sessionMessageRateInterval = null;
+                }
+
+                // Stop session refresh
+                if (sessionRefreshInterval) {
+                    clearInterval(sessionRefreshInterval);
+                    sessionRefreshInterval = null;
+                }
+            }
+        }
+
+        async function updateSDWriteStatus() {
+            try {
+                const response = await fetch('/api/session/sd-write-status');
+                const data = await response.json();
+                sdWriteEnabled = data.enabled;
+                updateSDWriteUI();
+            } catch (error) {
+                console.error('Failed to fetch SD write status:', error);
+            }
+        }
+
+        function updateSDWriteUI() {
+            const statusSpan = document.getElementById('sdWriteStatus');
+            const toggleBtn = document.getElementById('sdWriteToggleBtn');
+            const viewerStatus = document.getElementById('viewerSDStatus');
+
+            if (sdWriteEnabled) {
+                statusSpan.textContent = '✅ ENABLED';
+                statusSpan.style.color = '#4CAF50';
+                toggleBtn.textContent = '💾 Disable SD Write';
+                viewerStatus.textContent = '✅ Writing';
+            } else {
+                statusSpan.textContent = '❌ DISABLED';
+                statusSpan.style.color = '#ff6b6b';
+                toggleBtn.textContent = '💾 Enable SD Write';
+                viewerStatus.textContent = '❌ Not Writing';
+            }
+        }
+
+        async function toggleSDWrite() {
+            try {
+                const response = await fetch('/api/session/sd-write-toggle', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    sdWriteEnabled = data.enabled;
+                    updateSDWriteUI();
+
+                    const message = sdWriteEnabled ?
+                        'SD card writing enabled' :
+                        'SD card writing disabled (messages still monitored)';
+                    debugLog(message);
+                    updateMessage(message);
+                } else {
+                    debugLog('Failed to toggle SD write: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Failed to toggle SD write:', error);
+                debugLog('Error toggling SD write: ' + error);
+            }
+        }
+
+        async function confirmClearAllLogs() {
+            if (confirm('⚠️ Delete All Logs?\n\nThis will permanently delete:\n- Current debug log (DebugMessages.log)\n- All crash logs (CrashLog.txt)\n\nThis action cannot be undone.')) {
+                try {
+                    const response = await fetch('/api/session/clear-all-logs', { method: 'POST' });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Clear session viewer
+                        sessionMessages = [];
+                        sessionMessageCount = 0;
+                        renderSessionMessages();
+
+                        debugLog('All logs cleared - new session started');
+                        updateMessage('All logs cleared successfully');
+                    } else {
+                        debugLog('Failed to clear logs: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to clear logs:', error);
+                    debugLog('Error clearing logs: ' + error);
+                }
+            }
+        }
+
+        function toggleAutoScroll() {
+            sessionAutoScroll = !sessionAutoScroll;
+            const btn = document.getElementById('pinButton');
+            btn.textContent = sessionAutoScroll ? '📌 Pin' : '📌 Unpin';
+        }
+
+        function clearSessionViewer() {
+            sessionMessages = [];
+            sessionMessageCount = 0;
+            renderSessionMessages();
+        }
+
+        function downloadSessionMessages() {
+            if (sessionMessages.length === 0) {
+                alert('No messages to download');
+                return;
+            }
+
+            let content = `Session Control Log\n`;
+            content += `Exported: ${new Date().toLocaleString()}\n`;
+            content += `Total Messages: ${sessionMessages.length}\n`;
+            content += '='.repeat(80) + '\n\n';
+
+            sessionMessages.forEach(msg => {
+                content += `${msg}\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `session-log-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function appendSessionMessage(message, source = 'serial') {
+            const timestamp = new Date().toLocaleTimeString();
+
+            // Extract IP address from message if present (format: [IP.ADD.RE.SS] message)
+            let ipAddress = null;
+            let cleanMessage = message;
+            const ipMatch = message.match(/^\[(\d+\.\d+\.\d+\.\d+)\]\s*/);
+            if (ipMatch) {
+                ipAddress = ipMatch[1];
+                cleanMessage = message.substring(ipMatch[0].length);
+            }
+
+            // Check if this IP's session is muted (filtered)
+            if (ipAddress) {
+                const session = activeSessions.find(s => s.ipAddress === ipAddress);
+                if (session && sessionFilters[session.sessionId]) {
+                    // Session is muted - skip this message
+                    return;
+                }
+
+                // Increment message count for this session
+                if (session) {
+                    session.messageCount++;
+                }
+            }
+
+            const formattedMsg = ipAddress ?
+                `[${timestamp}] [${ipAddress}] ${cleanMessage}` :
+                `[${timestamp}] ${cleanMessage}`;
+
+            sessionMessages.push(formattedMsg);
+            sessionMessageCount++;
+            sessionMessageRateCounter++;
+
+            // Update viewer if session control is enabled
+            if (sessionControlEnabled) {
+                const viewer = document.getElementById('sessionMessageViewer');
+                const messageDiv = document.createElement('div');
+                messageDiv.style.margin = '2px 0';
+                messageDiv.style.padding = '2px 5px';
+
+                // Color-code by IP for easier visual tracking
+                const ipColor = ipAddress ? getIPColor(ipAddress) : '#888';
+                messageDiv.innerHTML = `<span style="color: #888;">[${timestamp}]</span> ` +
+                                     (ipAddress ? `<span style="color: ${ipColor}; font-weight: bold;">[${ipAddress}]</span> ` : '') +
+                                     `${escapeHtml(cleanMessage)}`;
+
+                viewer.appendChild(messageDiv);
+
+                if (sessionAutoScroll) {
+                    viewer.scrollTop = viewer.scrollHeight;
+                }
+
+                updateSessionStats();
+            }
+        }
+
+        // Generate a consistent color for each IP address
+        function getIPColor(ip) {
+            const colors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#FFEB3B', '#F44336'];
+            let hash = 0;
+            for (let i = 0; i < ip.length; i++) {
+                hash = ip.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function renderSessionMessages() {
+            const viewer = document.getElementById('sessionMessageViewer');
+            if (!viewer) return;
+
+            if (sessionMessages.length === 0) {
+                viewer.innerHTML = '<div style="color: #666; text-align: center; padding: 50px;">Waiting for messages...</div>';
+            } else {
+                viewer.innerHTML = '';
+                sessionMessages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.margin = '2px 0';
+                    messageDiv.style.padding = '2px 5px';
+                    messageDiv.textContent = msg;
+                    viewer.appendChild(messageDiv);
+                });
+
+                if (sessionAutoScroll) {
+                    viewer.scrollTop = viewer.scrollHeight;
+                }
+            }
+
+            updateSessionStats();
+        }
+
+        function updateSessionStats() {
+            document.getElementById('messageCount').textContent = sessionMessageCount;
+        }
+
+        function updateSessionMessageRate() {
+            const rate = sessionMessageRateCounter.toFixed(1);
+            document.getElementById('messageRate').textContent = rate + '/sec';
+            sessionMessageRateCounter = 0;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Debug Log Viewer variables
+        let debugLogContent = [];
+        let debugLogAutoScroll = true;
+        let debugLogFileSize = 0;
+
+        // Toggle debug log auto-scroll (pin/unpin)
+        function toggleDebugLogAutoScroll() {
+            debugLogAutoScroll = !debugLogAutoScroll;
+            const btn = document.getElementById('debugLogPinButton');
+            if (debugLogAutoScroll) {
+                btn.textContent = '📌 Pin';
+                btn.style.backgroundColor = '#4169e1';
+            } else {
+                btn.textContent = '📍 Pinned';
+                btn.style.backgroundColor = '#d32f2f';
+            }
+        }
+
+        // Reload debug log from SD card
+        async function reloadDebugLog() {
+            try {
+                document.getElementById('debugLogStatus').textContent = 'Loading...';
+
+                const response = await fetch('/api/logs/debug');
+                if (!response.ok) {
+                    throw new Error('Failed to load debug log');
+                }
+
+                const text = await response.text();
+                debugLogContent = text.split('\n');
+                debugLogFileSize = new Blob([text]).size;
+
+                renderDebugLog();
+
+                document.getElementById('debugLogStatus').textContent = 'Loaded';
+                document.getElementById('debugLogLineCount').textContent = debugLogContent.length;
+                document.getElementById('debugLogFileSize').textContent = (debugLogFileSize / 1024).toFixed(2) + ' KB';
+
+                debugLog('Debug log loaded: ' + debugLogContent.length + ' lines');
+            } catch (error) {
+                console.error('Error loading debug log:', error);
+                document.getElementById('debugLogStatus').textContent = 'Error';
+                document.getElementById('debugLogViewer').innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 50px;">Error loading debug log: ' + error.message + '</div>';
+            }
+        }
+
+        // Render debug log to viewer
+        function renderDebugLog() {
+            const viewer = document.getElementById('debugLogViewer');
+            if (debugLogContent.length === 0) {
+                viewer.innerHTML = '<div style="color: #666; text-align: center; padding: 50px;">Debug log is empty</div>';
+                return;
+            }
+
+            let html = '';
+            debugLogContent.forEach((line, index) => {
+                if (line.trim()) {
+                    // Color code lines based on content
+                    let color = '#ddd';
+                    if (line.includes('ERROR')) color = '#ff6b6b';
+                    else if (line.includes('WARNING')) color = '#ffa500';
+                    else if (line.includes('Session')) color = '#4CAF50';
+                    else if (line.includes('SIZING')) color = '#4169e1';
+
+                    html += `<div style="color: ${color}; padding: 2px 0;">${escapeHtml(line)}</div>`;
+                }
+            });
+
+            viewer.innerHTML = html;
+
+            // Auto-scroll to bottom if not pinned
+            if (debugLogAutoScroll) {
+                viewer.scrollTop = viewer.scrollHeight;
+            }
+        }
+
+        // Download debug log
+        function downloadDebugLog() {
+            if (debugLogContent.length === 0) {
+                alert('No debug log loaded. Click "Reload" first.');
+                return;
+            }
+
+            let content = `Debug Log\n`;
+            content += `Exported: ${new Date().toLocaleString()}\n`;
+            content += `Total Lines: ${debugLogContent.length}\n`;
+            content += `File Size: ${(debugLogFileSize / 1024).toFixed(2)} KB\n`;
+            content += '='.repeat(80) + '\n\n';
+
+            debugLogContent.forEach(line => {
+                content += `${line}\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `debug-log-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Fetch active sessions from ESP32
+        async function fetchActiveSessions() {
+            try {
+                const response = await fetch('/api/session/list');
+                const data = await response.json();
+
+                if (data.sessions) {
+                    activeSessions = data.sessions;
+                    renderSessionsList();
+                }
+            } catch (error) {
+                console.error('Failed to fetch sessions:', error);
+            }
+        }
+
+        // Render sessions list
+        function renderSessionsList() {
+            const container = document.getElementById('sessionsList');
+            if (!container) return;
+
+            if (activeSessions.length === 0) {
+                container.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">No active sessions</div>';
+                return;
+            }
+
+            let html = '';
+            activeSessions.forEach(session => {
+                const ageMinutes = Math.floor(session.ageSeconds / 60);
+                const ageSeconds = session.ageSeconds % 60;
+                const ageStr = ageMinutes > 0 ? `${ageMinutes}m ${ageSeconds}s` : `${ageSeconds}s`;
+
+                const isCurrentSession = session.sessionId === gameState.sessionId;
+                const borderColor = isCurrentSession ? '#4CAF50' : '#555';
+                const bgColor = isCurrentSession ? '#1a2a1a' : 'transparent';
+
+                html += `
+                    <div style="border: 1px solid ${borderColor}; background: ${bgColor}; padding: 10px; margin: 8px 0; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; color: #4CAF50; margin-bottom: 4px;">
+                                    ${session.ipAddress}
+                                    ${isCurrentSession ? '<span style="color: #ffa500; font-size: 0.8em;"> (You)</span>' : ''}
+                                </div>
+                                <div style="font-size: 0.85em; color: #aaa;">
+                                    Session: ${session.sessionId.substring(0, 8)}...
+                                    | Age: ${ageStr}
+                                    | Messages: ${session.messageCount}
+                                </div>
+                                ${session.gameActive ? `<div style="font-size: 0.85em; color: #4CAF50;">🎮 Playing: ${session.gameId.substring(0, 8)}... (${session.playerColor})</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                ${!isCurrentSession ? `<button onclick="refreshRemoteBrowser('${session.sessionId}')"
+                                        style="background-color: #2196F3; color: white; border: none; padding: 6px 12px;
+                                               border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                                    🔄 Refresh Browser
+                                </button>` : ''}
+                                <button onclick="toggleSessionLogging('${session.sessionId}')"
+                                        style="background-color: ${session.debugLogEnabled ? '#4CAF50' : '#666'};
+                                               color: white; border: none; padding: 6px 12px;
+                                               border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                                    ${session.debugLogEnabled ? '✓ Debug Log' : '✗ Debug Log'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Poll server for debug log state and update local state
+        async function pollDebugLogState() {
+            if (!gameState.sessionId) return;
+
+            try {
+                const response = await fetch(`/api/session/debug-state?sessionId=${gameState.sessionId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update local debug log state based on server
+                    gameState.debugLogEnabled = data.debugLogEnabled;
+
+                    // Check if admin requested a browser refresh
+                    if (data.pendingRefresh) {
+                        debugLog('Refresh command received from admin - reloading page...');
+                        // Stop polling immediately to prevent refresh loop
+                        if (gameState.debugLogPollInterval) {
+                            clearInterval(gameState.debugLogPollInterval);
+                        }
+                        // Reload page
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                // Silently fail - don't spam console
+            }
+        }
+
+        // Start polling debug log state every 2 seconds
+        function startDebugLogPolling() {
+            // Poll immediately
+            pollDebugLogState();
+
+            // Then poll every 2 seconds
+            setInterval(pollDebugLogState, 2000);
+        }
+
+        // Toggle debug logging for a specific session
+        async function toggleSessionLogging(sessionId) {
+            try {
+                const response = await fetch('/api/session/toggle-logging', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `sessionId=${sessionId}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update local session state
+                    const session = activeSessions.find(s => s.sessionId === sessionId);
+                    if (session) {
+                        session.debugLogEnabled = data.debugLogEnabled;
+                        renderSessionsList();
+
+                        debugLog(`Session ${sessionId.substring(0, 8)}... debug log ${data.debugLogEnabled ? 'enabled' : 'disabled'}`);
+                    }
+                } else {
+                    debugLog('Failed to toggle session debug log: ' + (data.error || 'unknown error'));
+                }
+            } catch (error) {
+                console.error('Error toggling session debug log:', error);
+                debugLog('Error toggling session debug log: ' + error.message);
+            }
+        }
+
+        // Send refresh command to remote browser via WebRTC
+        async function refreshRemoteBrowser(sessionId) {
+            try {
+                const response = await fetch('/api/session/send-refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `sessionId=${sessionId}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    debugLog(`Refresh command sent to session ${sessionId.substring(0, 8)}...`);
+                } else {
+                    debugLog('Failed to send refresh command: ' + (data.error || 'unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending refresh command:', error);
+                debugLog('Error sending refresh command: ' + error.message);
+            }
+        }
+
+        function toggleLabels() {
+            const labels = document.querySelectorAll('.square-label');
+            const btn = document.getElementById('labelsBtn');
+            const isShowingLabels = labels[0]?.classList.contains('show');
+
+            labels.forEach(label => {
+                label.classList.toggle('show');
+            });
+
+            // Update button color based on state
+            if (!isShowingLabels) {
+                btn.style.backgroundColor = '#4CAF50';  // Green when active
+            } else {
+                btn.style.backgroundColor = '#4169e1';  // Blue when inactive
+            }
+        }
+
+        function toggleMoves() {
+            gameState.showLegalMoves = !gameState.showLegalMoves;
+            const btn = document.getElementById('movesBtn');
+
+            if (gameState.showLegalMoves) {
+                btn.style.backgroundColor = '#4CAF50';  // Green when active
+                updateMessage("Legal moves highlighting enabled");
+            } else {
+                btn.style.backgroundColor = '#4169e1';  // Blue when inactive
+                updateMessage("Legal moves highlighting disabled");
+                clearHighlights();  // Clear any existing highlights
+            }
+        }
+
+        async function copyFEN() {
+            const fen = chess.fen();
+            const encodedFEN = encodeURIComponent(fen);
+            const lichessURL = `https://lichess.org/analysis/${encodedFEN}`;
+
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText(fen);
+                    updateMessage(`FEN copied! <a href="${lichessURL}" target="_blank" style="color: #4CAF50; text-decoration: underline;">Open in Lichess</a>`);
+                    return;
+                } catch (error) {
+                    debugLog('Clipboard API failed, using fallback: ' + error);
+                }
+            }
+
+            // Fallback: create temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = fen;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    updateMessage(`FEN copied! <a href="${lichessURL}" target="_blank" style="color: #4CAF50; text-decoration: underline;">Open in Lichess</a>`);
+                } else {
+                    updateMessage("Failed to copy FEN: " + fen);
+                }
+            } catch (error) {
+                // If all fails, show the FEN so user can manually copy
+                updateMessage("Failed to copy FEN: " + fen);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function highlightLegalMoves(squareName) {
+            const piece = chess.get(squareName);
+            const board = document.getElementById('chessboard');
+            let moves;
+
+            // If piece is not the current turn, temporarily switch turns to get moves
+            if (piece && piece.color !== chess.turn()) {
+                // Create a temporary chess instance to check opponent's potential moves
+                const tempChess = new Chess(chess.fen());
+                // Manually flip the turn in FEN
+                const currentFen = tempChess.fen();
+                const fenParts = currentFen.split(' ');
+                fenParts[1] = fenParts[1] === 'w' ? 'b' : 'w';  // Flip active color
+                fenParts[3] = '-';  // Clear en passant square (might not be valid for opponent)
+                const modifiedFen = fenParts.join(' ');
+                tempChess.load(modifiedFen);
+                moves = tempChess.moves({square: squareName, verbose: true});
+            } else {
+                moves = chess.moves({square: squareName, verbose: true});
+            }
+
+            moves.forEach(move => {
+                // Convert destination square (e.g., "e4") to row/col
+                const col = move.to.charCodeAt(0) - 97;  // 'a' = 0, 'b' = 1, etc.
+                const row = 8 - parseInt(move.to[1]);     // '8' = 0, '7' = 1, etc.
+                const index = row * 8 + col;
+
+                // Create a yellow circle indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'legal-move-indicator';
+                board.children[index].appendChild(indicator);
+            });
+        }
+
+        // Progress bar animation
+        let loadProgress = 0;
+        const progressInterval = setInterval(() => {
+            if (loadProgress < 90) {
+                loadProgress += Math.random() * 15;
+                if (loadProgress > 90) loadProgress = 90;
+                const bar = document.getElementById('loading-bar');
+                const text = document.getElementById('loading-text');
+                if (bar) bar.style.width = loadProgress + '%';
+                if (text) text.textContent = Math.floor(loadProgress) + '%';
+            }
+        }, 200);
+
+        // Initialize chess.js
+        const chess = new Chess();
+
+        // Initialize Stockfish engine
+        let stockfish = null;
+        let stockfishReady = false;
+        let engineDepth = 10; // Default difficulty level
+
+        function initStockfish() {
+            try {
+                debugLog('Initializing Stockfish engine...');
+
+                // Create worker from local ESP32
+                const wasmSupported = typeof WebAssembly === 'object' &&
+                    WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+
+                const workerUrl = wasmSupported ? '/stockfish.wasm.js' : '/stockfish.js';
+
+                debugLog('Loading engine from ESP32 (WASM: ' + wasmSupported + ')');
+
+                stockfish = new Worker(workerUrl);
+
+                stockfish.onmessage = function(event) {
+                    handleStockfishMessage(event.data);
+                };
+
+                stockfish.onerror = function(error) {
+                    debugLog('ERROR: Stockfish worker error: ' + error.message);
+                    console.error('Stockfish worker error:', error);
+                };
+
+                // Initialize engine
+                stockfish.postMessage('uci');
+
+            } catch (error) {
+                debugLog('ERROR: Stockfish init failed: ' + error.message);
+                console.error('Stockfish initialization error:', error);
+            }
+        }
+
+        function handleStockfishMessage(message) {
+            debugLog('[ENGINE] ' + message);
+
+            // Engine is ready
+            if (message === 'uciok') {
+                stockfish.postMessage('isready');
+            } else if (message === 'readyok') {
+                stockfishReady = true;
+                debugLog('Stockfish engine ready');
+                updateMessage("Ready. Click 'New Game' to start");
+            }
+            // Best move received
+            else if (message.startsWith('bestmove')) {
+                const parts = message.split(' ');
+                const moveUCI = parts[1];
+
+                if (moveUCI === '(none)' || !moveUCI) {
+                    debugLog('Engine returned no move - game over');
+                    updateMessage("Game Over");
+                    gameState.gameActive = false;
+                    gameState.waitingForEngine = false;
+                    document.getElementById('resignBtn').disabled = true;
+                    document.getElementById('newGameBtn').disabled = false;
+                    return;
+                }
+
+                debugLog('Engine move: ' + moveUCI);
+
+                // Random delay to simulate human thinking (5 to 15 seconds)
+                const thinkingDelay = Math.floor(Math.random() * 10000) + 5000;
+                const playerColor = chess.turn() === 'w' ? 'White' : 'Black';
+                updateMessageWithSpinner(`${playerColor} is Thinking`);
+
+                setTimeout(() => {
+                    // Parse UCI move (e.g., "e2e4" or "e7e8q" for promotion)
+                    const from = moveUCI.substring(0, 2);
+                    const to = moveUCI.substring(2, 4);
+                    const promotion = moveUCI.length > 4 ? moveUCI.substring(4) : undefined;
+
+                    // Make the move
+                    const move = chess.move({
+                        from: from,
+                        to: to,
+                        promotion: promotion
+                    });
+
+                if (move) {
+                    // Track last move for highlighting
+                    gameState.lastMoveFrom = from;
+                    gameState.lastMoveTo = to;
+
+                    updateBoardDisplay();
+                    gameState.waitingForEngine = false;
+
+                    // Send move to opponent in P2P mode
+                    if (gameState.isP2P && webrtcState.connected) {
+                        sendP2PMessage({
+                            type: 'move',
+                            from: from,
+                            to: to,
+                            promotion: promotion,
+                            fen: chess.fen()
+                        });
+                        gameState.myTurn = false;
+                    }
+
+                    // Save game state after engine move
+                    saveGameState();
+
+                    // Enable undo button after first complete move pair (player + engine)
+                    if (chess.history().length >= 2) {
+                        document.getElementById('undoBtn').disabled = false;
+                    }
+
+                    updateTurnMessage();
+
+                    // In local AI vs AI mode, automatically request next move
+                    if (gameState.autoPlay && !gameState.isP2P && gameState.gameActive) {
+                        setTimeout(() => {
+                            if (gameState.gameActive) {
+                                requestEngineMove();
+                            }
+                        }, 500); // Short delay to see the move
+                    }
+                    } else {
+                        debugLog('ERROR: Engine move invalid: ' + moveUCI);
+                        gameState.waitingForEngine = false;
+                        updateMessage("Error - invalid move");
+                    }
+                }, thinkingDelay); // End of setTimeout
+            }
+        }
+
+        function requestEngineMove() {
+            if (!stockfishReady) {
+                debugLog('Engine not ready yet');
+                return;
+            }
+
+            if (gameState.waitingForEngine) {
+                debugLog('Already waiting for engine move');
+                return;
+            }
+
+            gameState.waitingForEngine = true;
+            updateMessageWithSpinner("Black is Thinking");
+
+            // Send current position to engine
+            const fen = chess.fen();
+            stockfish.postMessage('position fen ' + fen);
+            stockfish.postMessage('go depth ' + engineDepth);
+
+            debugLog('Requesting engine move (depth ' + engineDepth + ')');
+        }
+
+        function updateDifficulty(value) {
+            engineDepth = parseInt(value);
+            document.getElementById('depthValue').textContent = value;
+            debugLog('Difficulty set to depth ' + engineDepth);
+        }
+
+        function loadCustomFEN() {
+            const fenInput = document.getElementById('fenInput');
+            const customFEN = fenInput.value.trim();
+
+            if (!customFEN) {
+                updateMessage("Please enter a FEN string");
+                return;
+            }
+
+            try {
+                // Try to load the FEN
+                chess.load(customFEN);
+                updateBoardDisplay();
+
+                // Start a new game from this position
+                gameState.gameActive = true;
+                gameState.playerColor = 'white';
+                gameState.waitingForEngine = false;
+
+                document.getElementById('newGameBtn').disabled = true;
+                document.getElementById('resignBtn').disabled = false;
+
+                debugLog('Loaded custom FEN: ' + customFEN);
+                updateMessage("Custom position loaded! Your move (white).");
+
+                // Clear the input
+                fenInput.value = '';
+            } catch (error) {
+                updateMessage("Invalid FEN string: " + error.message);
+                debugLog('ERROR: Invalid FEN - ' + error.message);
+            }
+        }
+
+        // Game state (modified for local Stockfish + WebRTC)
+        let gameState = {
+            sessionId: null,       // Unique session ID for this browser
+            gameId: null,
+            playerColor: 'white',
+            gameActive: false,
+            selectedSquare: null,
+            eventSource: null,
+            creatingGame: false,
+            isAdmin: false,        // Whether this IP has admin privileges
+            showLegalMoves: false, // Whether to highlight legal moves
+            waitingForEngine: false, // Whether we're waiting for Stockfish to respond
+            lastMoveFrom: null,    // Last move starting square (e.g., "e2")
+            lastMoveTo: null,      // Last move ending square (e.g., "e4")
+            gameMode: 'local',     // 'local', 'host', or 'join'
+            isP2P: false,          // Whether this is a P2P game
+            myTurn: true,          // For P2P: is it my turn to calculate?
+            autoPlay: false,       // For AI vs AI: auto-play mode
+            adminToggleSequence: null, // Track h1→h8 sequence for admin toggle
+            adminToggleTimeout: null,  // Timeout for resetting sequence
+            debugLogEnabled: false     // Whether debug logging is enabled
+        };
+
+        // WebRTC state
+        let webrtcState = {
+            peerConnection: null,
+            dataChannel: null,
+            gameCode: null,
+            isHost: false,
+            signalingActive: false,
+            connected: false,
+            pendingCandidates: []  // Queue for ICE candidates received before remote description
+        };
+
+        // Save game state to localStorage
+        function saveGameState() {
+            try {
+                const saveData = {
+                    fen: chess.fen(),
+                    pgn: chess.pgn(),
+                    playerColor: gameState.playerColor,
+                    gameActive: gameState.gameActive,
+                    engineDepth: engineDepth,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('chessGameState', JSON.stringify(saveData));
+                debugLog('Game state saved to localStorage');
+            } catch (e) {
+                debugLog('ERROR: Failed to save game state: ' + e.message);
+            }
+        }
+
+        // Restore game state from localStorage
+        function restoreGameState() {
+            try {
+                const savedData = localStorage.getItem('chessGameState');
+                if (!savedData) {
+                    debugLog('No saved game state found');
+                    return false;
+                }
+
+                const saveData = JSON.parse(savedData);
+
+                // Check if save is too old (more than 24 hours)
+                const age = Date.now() - saveData.timestamp;
+                if (age > 24 * 60 * 60 * 1000) {
+                    debugLog('Saved game state is too old, ignoring');
+                    localStorage.removeItem('chessGameState');
+                    return false;
+                }
+
+                // Restore game position
+                if (chess.load(saveData.fen)) {
+                    gameState.playerColor = saveData.playerColor;
+                    gameState.gameActive = saveData.gameActive;
+                    engineDepth = saveData.engineDepth || 10;
+
+                    // Update UI
+                    updateBoardDisplay();
+                    document.getElementById('depthSlider').value = engineDepth;
+                    document.getElementById('depthValue').textContent = engineDepth;
+
+                    // Update buttons
+                    document.getElementById('newGameBtn').disabled = gameState.gameActive;
+                    document.getElementById('resignBtn').disabled = !gameState.gameActive;
+
+                    debugLog('Game state restored from localStorage');
+
+                    if (gameState.gameActive) {
+                        updateMessage("Game restored! Your turn.");
+                        return true;
+                    }
+                } else {
+                    debugLog('ERROR: Failed to load saved game position');
+                    localStorage.removeItem('chessGameState');
+                }
+            } catch (e) {
+                debugLog('ERROR: Failed to restore game state: ' + e.message);
+                localStorage.removeItem('chessGameState');
+            }
+            return false;
+        }
+
+        // Clear saved game state
+        function clearSavedGame() {
+            localStorage.removeItem('chessGameState');
+            debugLog('Saved game state cleared');
+        }
+
+        // Piece SVG definitions
+        const pieceSVGs = {
+            'p': '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"/></svg>',
+            'r': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none"/></g></svg>',
+            'n': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M22,10 C32.5,11 38.5,18 38,39 L15,39 C15,30 25,32.5 23,18"/><path d="M24,18 C24.38,20.91 18.45,25.37 16,27 C13,29 13.18,31.34 11,31 C9.958,30.06 12.41,27.96 11,28 C10,28 11.19,29.23 10,30 C9,30 5.997,31 6,26 C6,24 12,14 12,14 C12,14 13.89,12.1 14,10.5 C13.27,9.506 13.5,8.5 13.5,7.5 C14.5,6.5 16.5,10 16.5,10 L18.5,10 C18.5,10 19.28,8.008 21,7 C22,7 22,10 22,10"/></g></svg>',
+            'b': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/></g></svg>',
+            'q': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><circle cx="6" cy="12" r="2.5"/><circle cx="14" cy="9" r="2.5"/><circle cx="22.5" cy="7.5" r="2.5"/><circle cx="31" cy="9" r="2.5"/><circle cx="39" cy="12" r="2.5"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-14V25L7 14l2 12zM9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/></g></svg>',
+            'k': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z"/></g></svg>'
+        };
+
+        function getPieceSVG(piece) {
+            if (!piece) return '';
+            const pieceType = piece.type;
+            const color = piece.color === 'w' ? 'white' : 'black';
+            const fill = color === 'white' ? '#ffffff' : '#000000';
+            const stroke = color === 'white' ? '#000000' : '#ffffff';
+
+            let svg = pieceSVGs[pieceType] || '';
+            svg = svg.replace(/__FILL__/g, fill);
+            svg = svg.replace(/__STROKE__/g, stroke);
+            return svg;
+        }
+
+        function initBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    const squareName = String.fromCharCode(97 + col) + (8 - row);
+                    square.dataset.square = squareName;
+                    square.onclick = () => handleSquareClick(row, col);
+                    square.ondblclick = () => handleSquareDoubleClick(row, col);
+
+                    // Add square label in top-right corner
+                    const label = document.createElement('div');
+                    label.className = 'square-label';
+                    label.textContent = squareName.toUpperCase();
+                    square.appendChild(label);
+
+                    board.appendChild(square);
+                }
+            }
+            updateBoardDisplay();
+        }
+
+        function updateBoardDisplay() {
+            const board = document.getElementById('chessboard');
+            const squares = board.children;
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const squareName = String.fromCharCode(97 + col) + (8 - row);
+                    const piece = chess.get(squareName);
+                    const index = row * 8 + col;
+                    const square = squares[index];
+
+                    // Preserve the label element
+                    const label = square.querySelector('.square-label');
+
+                    // Remove last-move highlight from all squares first
+                    square.classList.remove('last-move');
+
+                    // Add last-move highlight to the from/to squares
+                    if (gameState.lastMoveFrom === squareName || gameState.lastMoveTo === squareName) {
+                        square.classList.add('last-move');
+                    }
+
+                    if (piece) {
+                        square.innerHTML = '<div class="piece">' + getPieceSVG(piece) + '</div>';
+                    } else {
+                        square.innerHTML = '';
+                    }
+
+                    // Re-append label if it existed
+                    if (label) {
+                        square.appendChild(label);
+                    }
+                }
+            }
+        }
+
+        // Game state saving removed - not needed for local Stockfish games
+
+        function handleSquareDoubleClick(row, col) {
+            const squareName = String.fromCharCode(97 + col) + (8 - row);
+
+            // Check for admin toggle sequence: h1 → h8
+            if (squareName === 'h1') {
+                // First click in sequence
+                gameState.adminToggleSequence = 'h1';
+
+                // Clear any existing timeout
+                if (gameState.adminToggleTimeout) {
+                    clearTimeout(gameState.adminToggleTimeout);
+                }
+
+                // Reset sequence after 3 seconds
+                gameState.adminToggleTimeout = setTimeout(() => {
+                    gameState.adminToggleSequence = null;
+                }, 3000);
+            } else if (squareName === 'h8' && gameState.adminToggleSequence === 'h1') {
+                // Second click completes the sequence
+                gameState.adminToggleSequence = null;
+                if (gameState.adminToggleTimeout) {
+                    clearTimeout(gameState.adminToggleTimeout);
+                }
+                toggleAdmin();
+            } else {
+                // Any other double-click resets the sequence
+                gameState.adminToggleSequence = null;
+                if (gameState.adminToggleTimeout) {
+                    clearTimeout(gameState.adminToggleTimeout);
+                }
+            }
+        }
+
+        function handleSquareClick(row, col) {
+            if (!gameState.gameActive) {
+                updateMessage("Start a new game first");
+                return;
+            }
+
+            const squareName = String.fromCharCode(97 + col) + (8 - row);
+
+            if (!gameState.selectedSquare) {
+                // Select piece
+                const piece = chess.get(squareName);
+                if (piece) {
+                    // Allow selecting any piece for viewing moves (Option 1)
+                    gameState.selectedSquare = squareName;
+                    highlightSquare(row, col, true);
+
+                    // Highlight legal moves if feature is enabled
+                    if (gameState.showLegalMoves) {
+                        highlightLegalMoves(squareName);
+                    }
+
+                    // Show appropriate message based on piece color
+                    if (piece.color === gameState.playerColor[0]) {
+                        updateMessage(`Selected ${squareName}. Click destination.`);
+                    } else {
+                        updateMessage(`Viewing moves for ${squareName} (cannot move opponent's pieces)`);
+                    }
+                }
+            } else {
+                // Try to move
+                const from = gameState.selectedSquare;
+                const to = squareName;
+
+                clearHighlights();
+                gameState.selectedSquare = null;
+
+                if (from === to) {
+                    updateMessage("Move cancelled");
+                    return;
+                }
+
+                // Only allow moving player's own pieces
+                const piece = chess.get(from);
+                if (piece && piece.color !== gameState.playerColor[0]) {
+                    updateMessage("Cannot move opponent's pieces");
+                    return;
+                }
+
+                makeMove(from, to);
+            }
+        }
+
+        function highlightSquare(row, col, highlight) {
+            const board = document.getElementById('chessboard');
+            const index = row * 8 + col;
+            if (highlight) {
+                board.children[index].classList.add('selected');
+            } else {
+                board.children[index].classList.remove('selected');
+            }
+        }
+
+        function clearHighlights() {
+            const board = document.getElementById('chessboard');
+            for (let square of board.children) {
+                square.classList.remove('selected');
+                // Remove all legal move indicators
+                const indicators = square.querySelectorAll('.legal-move-indicator');
+                indicators.forEach(indicator => indicator.remove());
+            }
+        }
+
+        async function startNewGame() {
+            if (!stockfishReady) {
+                updateMessage("Not ready yet. Please wait...");
+                return;
+            }
+
+            // Check if P2P mode requires connection
+            if (gameState.isP2P && !webrtcState.connected) {
+                updateMessage("Please connect to opponent first");
+                return;
+            }
+
+            debugLog('Starting new game (mode: ' + gameState.gameMode + ')');
+
+            // Reset game state
+            gameState.gameActive = true;
+            gameState.waitingForEngine = false;
+            gameState.lastMoveFrom = null;
+            gameState.lastMoveTo = null;
+
+            // In P2P mode, host plays white, client plays black
+            if (gameState.isP2P) {
+                gameState.playerColor = webrtcState.isHost ? 'white' : 'black';
+                gameState.myTurn = webrtcState.isHost; // Host goes first
+                debugLog('P2P game - I am ' + gameState.playerColor + ', myTurn: ' + gameState.myTurn);
+            } else {
+                gameState.playerColor = 'white';
+                gameState.myTurn = true;
+            }
+
+            // Reset board
+            chess.reset();
+            updateBoardDisplay();
+
+            // Save initial game state
+            saveGameState();
+
+            // Enable/disable buttons
+            document.getElementById('newGameBtn').disabled = true;
+            document.getElementById('resignBtn').disabled = false;
+            document.getElementById('undoBtn').disabled = true;
+
+            // Notify opponent in P2P mode
+            if (gameState.isP2P && webrtcState.connected) {
+                sendP2PMessage({
+                    type: 'start-game',
+                    fen: chess.fen()
+                });
+            }
+
+            if (gameState.isP2P) {
+                if (gameState.autoPlay && gameState.myTurn) {
+                    updateMessage("AI vs AI Battle! (" + gameState.playerColor + " calculating first move...)");
+                    // Auto-play: start engine move
+                    setTimeout(() => {
+                        requestEngineMove();
+                    }, 1000);
+                } else {
+                    updateMessage("AI vs AI Battle! Waiting for opponent's first move...");
+                }
+            } else if (gameState.autoPlay) {
+                // Local AI vs AI mode
+                updateMessage("AI vs AI Battle! White is thinking...");
+                setTimeout(() => {
+                    requestEngineMove();
+                }, 1000);
+            } else {
+                updateMessage("New game started! You are white. Your move.");
+            }
+
+            debugLog('Game ready - color: ' + gameState.playerColor);
+        }
+
+        // Lichess event stream code removed - now using local Stockfish engine
+
+        async function makeMove(from, to) {
+            // Try move with chess.js first
+            let move = chess.move({from: from, to: to, promotion: 'q'});
+
+            if (!move) {
+                updateMessage("Illegal move");
+                return;
+            }
+
+            // Track last move for highlighting
+            gameState.lastMoveFrom = from;
+            gameState.lastMoveTo = to;
+
+            // Convert to UCI
+            const uci = from + to + (move.promotion ? move.promotion : '');
+            debugLog('Player move: ' + uci);
+
+            // Update display
+            updateBoardDisplay();
+
+            // Save game state after player move
+            saveGameState();
+
+            // Check if game is over after player's move
+            if (chess.game_over()) {
+                updateTurnMessage();
+                return;
+            }
+
+            // Request engine move
+            requestEngineMove();
+        }
+
+        async function resignGame() {
+            if (!gameState.gameActive) {
+                updateMessage("No active game");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to resign?")) {
+                return;
+            }
+
+            debugLog('Player resigned');
+            gameState.gameActive = false;
+            gameState.waitingForEngine = false;
+
+            // Clear saved game
+            clearSavedGame();
+
+            // Enable/disable buttons
+            document.getElementById('newGameBtn').disabled = false;
+            document.getElementById('resignBtn').disabled = true;
+
+            updateMessage("Game resigned. You lost. Click 'New Game' to play again.");
+        }
+
+        function undoMove() {
+            if (!gameState.gameActive) {
+                updateMessage("No active game");
+                return;
+            }
+
+            if (gameState.waitingForEngine) {
+                updateMessage("Cannot undo while opponent is thinking");
+                return;
+            }
+
+            // Get move history
+            const history = chess.history({ verbose: true });
+
+            if (history.length < 2) {
+                updateMessage("Not enough moves to undo");
+                return;
+            }
+
+            // Undo last 2 moves (player move + engine move)
+            chess.undo(); // Undo engine move
+            chess.undo(); // Undo player move
+
+            // Clear last move highlighting
+            gameState.lastMoveFrom = null;
+            gameState.lastMoveTo = null;
+
+            // Update display
+            updateBoardDisplay();
+
+            // Save game state
+            saveGameState();
+
+            // Disable undo button if less than 2 moves left
+            if (chess.history().length < 2) {
+                document.getElementById('undoBtn').disabled = true;
+            }
+
+            updateMessage("Undone last move. Your turn.");
+            debugLog('Undone last 2 moves');
+        }
+
+        async function ejectSDCard() {
+            if (!confirm("Eject SD card?\n\nThis will safely unmount the SD card so you can remove it without causing disk errors.\n\nYou will need to reboot the ESP32 after reinserting the card.")) {
+                return;
+            }
+
+            debugLog("Ejecting SD card...");
+            updateMessageWithSpinner("Ejecting SD card");
+
+            try {
+                const response = await fetch('/api/eject', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    updateMessage("It is ok to remove the SD Card. Now re-insert and Reboot ESP32.");
+                    debugLog("SD card ejected successfully");
+                } else {
+                    updateMessage("Error ejecting SD card: " + (data.error || "Unknown error"));
+                }
+            } catch (error) {
+                updateMessage("Error: " + error.message);
+            }
+        }
+
+        async function rebootESP32() {
+            if (!confirm("Are you sure you want to reboot the ESP32?\n\nThis will disconnect all games and restart the system.")) {
+                return;
+            }
+
+            debugLog("Rebooting ESP32...");
+            updateMessageWithSpinner("Rebooting ESP32");
+
+            // Clear saved game state so we don't try to reconnect after reboot
+            clearSavedGameState();
+            gameState.gameActive = false;  // Prevent beforeunload from saving
+
+            try {
+                await fetch('/api/reboot', { method: 'POST' });
+                // ESP32 will reboot and disconnect, so we show a message with spinner
+                updateMessageWithSpinner("ESP32 is rebooting. Please wait");
+
+                // Reload page after 10 seconds to reconnect
+                setTimeout(() => {
+                    window.location.reload();
+                }, 10000);
+            } catch (error) {
+                // Error is expected as ESP32 disconnects during reboot
+                debugLog("Reboot command sent (connection lost as expected)");
+                updateMessageWithSpinner("ESP32 is rebooting. Please wait");
+
+                // Still reload after 10 seconds even if fetch fails
+                setTimeout(() => {
+                    window.location.reload();
+                }, 10000);
+            }
+        }
+
+        async function resetSystem() {
+            debugLog('=== SYSTEM RESET ===');
+
+            // Reset frontend state
+            gameState.gameActive = false;
+            gameState.gameId = null;
+            gameState.playerColor = 'white';
+            gameState.selectedSquare = null;
+            gameState.waitingForEngine = false;
+
+            // Reset chess board
+            chess.reset();
+            updateBoardDisplay();
+
+            // Re-enable buttons
+            document.getElementById('newGameBtn').disabled = false;
+            document.getElementById('resignBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = false;
+            document.getElementById('resetBtn').style.animation = '';
+
+            debugLog('Reset successful');
+            updateMessage("✓ Reset successful. Choose 'New Game' to begin.");
+        }
+
+        function updateTurnMessage() {
+            const turn = chess.turn();
+            const playerTurn = (turn === 'w' && gameState.playerColor === 'white') ||
+                              (turn === 'b' && gameState.playerColor === 'black');
+
+            if (playerTurn) {
+                updateMessage("Your turn (" + gameState.playerColor + ")");
+            } else {
+                updateMessageWithSpinner("Black is Thinking");
+            }
+
+            if (chess.in_check()) {
+                updateMessage("CHECK! " + (playerTurn ? "Your turn" : "Black is Thinking"));
+            }
+
+            if (chess.game_over()) {
+                gameState.gameActive = false;
+                document.getElementById('resignBtn').disabled = true;  // Disable resign - game over
+                document.getElementById('newGameBtn').disabled = false;  // Re-enable New Game - game is over
+
+                // Clear saved game when game ends
+                clearSavedGame();
+
+                if (chess.in_checkmate()) {
+                    updateMessage("CHECKMATE! " + (playerTurn ? "You lost" : "You won!"));
+                } else if (chess.in_stalemate()) {
+                    updateMessage("STALEMATE - Draw");
+                } else if (chess.in_draw()) {
+                    updateMessage("DRAW");
+                }
+            }
+        }
+
+        function updateMessage(msg) {
+            document.getElementById('moveMessage').innerHTML = msg;
+        }
+
+        function updateMessageWithSpinner(msg) {
+            const messageDiv = document.getElementById('moveMessage');
+            messageDiv.innerHTML = msg + ' <span class="spinner"></span>';
+        }
+
+        function updateUIHeight() {
+            const buttonBar = document.querySelector('.button-bar');
+            const messageContainer = document.querySelector('.move-message-container');
+            const chessContainer = document.querySelector('.chess-container');
+
+            if (buttonBar && messageContainer && chessContainer) {
+                const chessContainerTop = chessContainer.offsetTop;
+                const reservedHeight = chessContainerTop + 10;
+                document.documentElement.style.setProperty('--ui-height', `${reservedHeight}px`);
+            }
+        }
+
+        function resizeChessboard() {
+            const buttonBar = document.querySelector('.button-bar');
+            const messageContainer = document.querySelector('.move-message-container');
+            const chessContainer = document.querySelector('.chess-container');
+            const chessboard = document.querySelector('.chessboard');
+            const settingsPanel = document.getElementById('settingsPanel');
+
+            if (!chessContainer || !chessboard || !buttonBar || !messageContainer) {
+                console.log('Resize skipped - elements not found');
+                return;
+            }
+
+            // Calculate exact available space from window height
+            const buttonBarHeight = buttonBar.offsetHeight;
+            const messageHeight = messageContainer.offsetHeight;
+            const settingsHeight = (settingsPanel && settingsPanel.style.display !== 'none') ? settingsPanel.offsetHeight : 0;
+            const containerPadding = 13; // chess-container padding (3px top + 10px bottom)
+
+            // Device-adaptive safety margin
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isIPhone = /iphone/.test(userAgent);
+            const isAndroid = /android/.test(userAgent);
+            const isMobile = isIPad || isIPhone || isAndroid || /mobile/.test(userAgent);
+
+            // Different devices need different safety margins due to browser UI
+            let safetyMargin;
+            if (isIPad) {
+                safetyMargin = 50; // iPad Safari with minimal UI
+            } else if (isIPhone) {
+                safetyMargin = 80; // iPhone has more browser chrome
+            } else if (isAndroid) {
+                safetyMargin = 70; // Android browsers vary
+            } else if (isMobile) {
+                safetyMargin = 70; // Other mobile devices
+            } else {
+                safetyMargin = 30; // Desktop browsers have less UI overlap
+            }
+
+            const availableHeight = window.innerHeight - buttonBarHeight - messageHeight - settingsHeight - containerPadding - safetyMargin;
+            const availableWidth = window.innerWidth - 40; // 20px margin on each side
+
+            // Board must be square - use the smaller dimension
+            const maxSize = Math.min(availableWidth, availableHeight);
+
+            // Set the board size dynamically
+            chessboard.style.width = maxSize + 'px';
+            chessboard.style.height = maxSize + 'px';
+
+            debugLog(`Resize: winH=${window.innerHeight}, btnH=${buttonBarHeight}, msgH=${messageHeight}, settingsH=${settingsHeight}, availH=${availableHeight}, availW=${availableWidth}, size=${maxSize}`);
+        }
+
+        // ========== Session Management ==========
+
+        // Create a new session with the ESP32
+        async function createSession() {
+            try {
+                // Check if we have a saved session ID
+                const savedSessionId = localStorage.getItem('chessSessionId');
+                if (savedSessionId) {
+                    // Try to verify the saved session still exists
+                    try {
+                        const verifyResponse = await fetch('/api/lichess/status?sessionId=' + savedSessionId);
+                        const verifyData = await verifyResponse.json();
+
+                        if (verifyResponse.ok && !verifyData.error) {
+                            // Session is still valid, use it
+                            gameState.sessionId = savedSessionId;
+                            debugLog(`Restored session: ${savedSessionId}`);
+                            return true;
+                        } else {
+                            // Session expired or not found, clear it
+                            console.log('Saved session expired, creating new one');
+                            localStorage.removeItem('chessSessionId');
+                        }
+                    } catch (error) {
+                        // Verification failed, clear and create new
+                        console.log('Session verification failed, creating new one');
+                        localStorage.removeItem('chessSessionId');
+                    }
+                }
+
+                // Create new session
+                const response = await fetch('/api/session/create', {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.sessionId) {
+                    gameState.sessionId = data.sessionId;
+                    localStorage.setItem('chessSessionId', data.sessionId);
+                    debugLog(`Session created: ${data.sessionId} (IP: ${data.ipAddress})`);
+                    return true;
+                } else {
+                    console.error('Failed to create session:', data);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error creating session:', error);
+                updateMessage('Failed to create session. Please refresh the page.');
+                return false;
+            }
+        }
+
+        // ========== Game Mode Management ==========
+
+        function setGameMode(mode) {
+            gameState.gameMode = mode;
+            debugLog('Game mode set to: ' + mode);
+
+            // Update button styles
+            document.getElementById('modeLocalBtn').style.backgroundColor = mode === 'local' ? '#4CAF50' : '#4169e1';
+            document.getElementById('modeAiVsAiBtn').style.backgroundColor = mode === 'ai-vs-ai' ? '#4CAF50' : '#4169e1';
+            document.getElementById('modeHostBtn').style.backgroundColor = mode === 'host' ? '#4CAF50' : '#4169e1';
+            document.getElementById('modeJoinBtn').style.backgroundColor = mode === 'join' ? '#4CAF50' : '#4169e1';
+
+            // Show/hide WebRTC panel
+            const webrtcPanel = document.getElementById('webrtcPanel');
+            const gameCodeInput = document.getElementById('gameCodeInput');
+            const gameCodeDisplay = document.getElementById('gameCodeDisplay');
+            const connectBtn = document.getElementById('connectBtn');
+
+            if (mode === 'local') {
+                webrtcPanel.style.display = 'none';
+                gameState.isP2P = false;
+                gameState.autoPlay = false;
+                updateMessage("Click 'New Game' to play vs AI");
+            } else if (mode === 'ai-vs-ai') {
+                webrtcPanel.style.display = 'none';
+                gameState.isP2P = false;
+                gameState.autoPlay = true;
+                updateMessage("Click 'New Game' to watch AI vs AI");
+            } else if (mode === 'host') {
+                webrtcPanel.style.display = 'flex';
+                gameCodeInput.style.display = 'none';
+                connectBtn.style.display = 'none';
+                gameCodeDisplay.style.display = 'inline';
+                gameState.isP2P = true;
+                gameState.autoPlay = true;
+
+                // Generate game code and create offer
+                webrtcState.gameCode = generateGameCode();
+                webrtcState.isHost = true;
+                gameCodeDisplay.textContent = 'Game Code: ' + webrtcState.gameCode;
+
+                updateMessage("Share game code with opponent. Click 'New Game' when ready.");
+                debugLog('Host mode - Game code: ' + webrtcState.gameCode);
+
+                // Initialize WebRTC as host
+                initWebRTCHost();
+            } else if (mode === 'join') {
+                webrtcPanel.style.display = 'flex';
+                gameCodeInput.style.display = 'inline';
+                connectBtn.style.display = 'inline';
+                gameCodeDisplay.style.display = 'none';
+                gameState.isP2P = true;
+                gameState.autoPlay = true;
+
+                webrtcState.isHost = false;
+                updateMessage("Enter game code and click 'Connect'");
+            }
+        }
+
+        function generateGameCode() {
+            // Generate 6-character alphanumeric code
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function updateConnectionStatus(status, color) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (statusElement) {
+                statusElement.style.color = color;
+                statusElement.title = status;
+            }
+            debugLog('Connection status: ' + status);
+        }
+
+        // ========== WebRTC Implementation ==========
+
+        function initWebRTCHost() {
+            debugLog('Initializing WebRTC as host');
+
+            // Create peer connection
+            const config = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            };
+
+            webrtcState.peerConnection = new RTCPeerConnection(config);
+
+            // Create data channel
+            webrtcState.dataChannel = webrtcState.peerConnection.createDataChannel('chess');
+            setupDataChannel(webrtcState.dataChannel);
+
+            // Handle ICE candidates
+            webrtcState.peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    debugLog('ICE candidate: ' + JSON.stringify(event.candidate));
+                    sendSignalingMessage({
+                        type: 'ice-candidate',
+                        gameCode: webrtcState.gameCode,
+                        fromPeer: 'host',
+                        candidate: event.candidate
+                    });
+                }
+            };
+
+            // Create offer
+            webrtcState.peerConnection.createOffer()
+                .then(offer => {
+                    return webrtcState.peerConnection.setLocalDescription(offer);
+                })
+                .then(() => {
+                    debugLog('Created offer, sending to signaling server');
+                    sendSignalingMessage({
+                        type: 'offer',
+                        gameCode: webrtcState.gameCode,
+                        fromPeer: 'host',
+                        offer: webrtcState.peerConnection.localDescription
+                    });
+
+                    // Start listening for answer
+                    startSignalingListener();
+                })
+                .catch(error => {
+                    debugLog('ERROR creating offer: ' + error.message);
+                });
+
+            updateConnectionStatus('Waiting for peer...', '#FFA500');
+        }
+
+        function connectToGame() {
+            const gameCodeInput = document.getElementById('gameCodeInput');
+            const gameCode = gameCodeInput.value.trim().toUpperCase();
+
+            if (!gameCode || gameCode.length !== 6) {
+                updateMessage('Please enter a valid 6-character game code');
+                return;
+            }
+
+            webrtcState.gameCode = gameCode;
+            debugLog('Joining game: ' + gameCode);
+
+            // Disable input and button
+            gameCodeInput.disabled = true;
+            document.getElementById('connectBtn').disabled = true;
+
+            // Initialize WebRTC as client
+            initWebRTCClient();
+
+            updateMessage('Connecting to game...');
+            updateConnectionStatus('Connecting...', '#FFA500');
+        }
+
+        function initWebRTCClient() {
+            debugLog('Initializing WebRTC as client');
+
+            const config = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            };
+
+            webrtcState.peerConnection = new RTCPeerConnection(config);
+
+            // Handle data channel from host
+            webrtcState.peerConnection.ondatachannel = (event) => {
+                debugLog('Data channel received from host');
+                webrtcState.dataChannel = event.channel;
+                setupDataChannel(webrtcState.dataChannel);
+            };
+
+            // Handle ICE candidates
+            webrtcState.peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    debugLog('ICE candidate: ' + JSON.stringify(event.candidate));
+                    sendSignalingMessage({
+                        type: 'ice-candidate',
+                        gameCode: webrtcState.gameCode,
+                        fromPeer: 'client',
+                        candidate: event.candidate
+                    });
+                }
+            };
+
+            // Start listening for offer
+            startSignalingListener();
+        }
+
+        function setupDataChannel(channel) {
+            channel.onopen = () => {
+                debugLog('WebRTC data channel opened');
+                webrtcState.connected = true;
+                updateConnectionStatus('Connected', '#4CAF50');
+                updateMessage('Connected! Click "New Game" to start AI vs AI battle.');
+            };
+
+            channel.onclose = () => {
+                debugLog('WebRTC data channel closed');
+                webrtcState.connected = false;
+                updateConnectionStatus('Disconnected', '#FF0000');
+                updateMessage('Connection lost. Please refresh and reconnect.');
+            };
+
+            channel.onerror = (error) => {
+                debugLog('ERROR: Data channel error: ' + error);
+            };
+
+            channel.onmessage = (event) => {
+                handleP2PMessage(JSON.parse(event.data));
+            };
+        }
+
+        function sendSignalingMessage(message) {
+            fetch('/api/webrtc/signal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(message)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    debugLog('Signaling message sent: ' + message.type);
+                } else {
+                    debugLog('ERROR: Signaling failed: ' + (data.error || 'unknown'));
+                }
+            })
+            .catch(error => {
+                debugLog('ERROR: Signaling request failed: ' + error.message);
+            });
+        }
+
+        function startSignalingListener() {
+            if (webrtcState.signalingActive) {
+                return;
+            }
+
+            webrtcState.signalingActive = true;
+            debugLog('Starting signaling listener for game: ' + webrtcState.gameCode);
+
+            // Poll for signaling messages
+            pollSignalingMessages();
+        }
+
+        function pollSignalingMessages() {
+            if (!webrtcState.signalingActive || webrtcState.connected) {
+                return;
+            }
+
+            const asPeer = webrtcState.isHost ? 'host' : 'client';
+            fetch('/api/webrtc/poll?gameCode=' + webrtcState.gameCode + '&asPeer=' + asPeer)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages && data.messages.length > 0) {
+                        data.messages.forEach(msg => processSignalingMessage(msg));
+                    }
+
+                    // Continue polling if not connected
+                    if (!webrtcState.connected && webrtcState.signalingActive) {
+                        setTimeout(pollSignalingMessages, 1000);
+                    }
+                })
+                .catch(error => {
+                    debugLog('ERROR: Signaling poll failed: ' + error.message);
+                    if (webrtcState.signalingActive) {
+                        setTimeout(pollSignalingMessages, 2000);
+                    }
+                });
+        }
+
+        function processSignalingMessage(message) {
+            debugLog('Processing signaling message: ' + message.type);
+
+            if (message.type === 'offer' && !webrtcState.isHost) {
+                // Client receives offer
+                webrtcState.peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer))
+                    .then(() => {
+                        // Process any pending ICE candidates now that we have remote description
+                        debugLog('Processing ' + webrtcState.pendingCandidates.length + ' pending ICE candidates');
+                        webrtcState.pendingCandidates.forEach(candidate => {
+                            webrtcState.peerConnection.addIceCandidate(candidate)
+                                .catch(error => {
+                                    debugLog('ERROR adding pending ICE candidate: ' + error.message);
+                                });
+                        });
+                        webrtcState.pendingCandidates = [];
+
+                        return webrtcState.peerConnection.createAnswer();
+                    })
+                    .then(answer => {
+                        return webrtcState.peerConnection.setLocalDescription(answer);
+                    })
+                    .then(() => {
+                        debugLog('Created answer, sending to signaling server');
+                        sendSignalingMessage({
+                            type: 'answer',
+                            gameCode: webrtcState.gameCode,
+                            fromPeer: 'client',
+                            answer: webrtcState.peerConnection.localDescription
+                        });
+                    })
+                    .catch(error => {
+                        debugLog('ERROR processing offer: ' + error.message);
+                    });
+            } else if (message.type === 'answer' && webrtcState.isHost) {
+                // Host receives answer
+                webrtcState.peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer))
+                    .then(() => {
+                        // Process any pending ICE candidates now that we have remote description
+                        debugLog('Processing ' + webrtcState.pendingCandidates.length + ' pending ICE candidates');
+                        webrtcState.pendingCandidates.forEach(candidate => {
+                            webrtcState.peerConnection.addIceCandidate(candidate)
+                                .catch(error => {
+                                    debugLog('ERROR adding pending ICE candidate: ' + error.message);
+                                });
+                        });
+                        webrtcState.pendingCandidates = [];
+                    })
+                    .catch(error => {
+                        debugLog('ERROR processing answer: ' + error.message);
+                    });
+            } else if (message.type === 'ice-candidate') {
+                // Add ICE candidate - queue if remote description not set yet
+                const candidate = new RTCIceCandidate(message.candidate);
+
+                if (webrtcState.peerConnection.remoteDescription) {
+                    // Remote description is set, add candidate immediately
+                    webrtcState.peerConnection.addIceCandidate(candidate)
+                        .catch(error => {
+                            debugLog('ERROR adding ICE candidate: ' + error.message);
+                        });
+                } else {
+                    // Remote description not set yet, queue the candidate
+                    debugLog('Queueing ICE candidate (remote description not set)');
+                    webrtcState.pendingCandidates.push(candidate);
+                }
+            }
+        }
+
+        function sendP2PMessage(message) {
+            if (webrtcState.dataChannel && webrtcState.connected) {
+                webrtcState.dataChannel.send(JSON.stringify(message));
+                debugLog('Sent P2P message: ' + message.type);
+            } else {
+                debugLog('ERROR: Cannot send P2P message - not connected');
+            }
+        }
+
+        function handleP2PMessage(message) {
+            debugLog('Received P2P message: ' + message.type);
+
+            if (message.type === 'move') {
+                // Opponent made a move
+                const from = message.from;
+                const to = message.to;
+                const promotion = message.promotion;
+
+                debugLog('Opponent move: ' + from + to + (promotion || ''));
+
+                // Make the move on our board
+                const move = chess.move({ from, to, promotion });
+
+                if (move) {
+                    gameState.lastMoveFrom = from;
+                    gameState.lastMoveTo = to;
+                    updateBoardDisplay();
+
+                    // Check if game is over
+                    if (chess.game_over()) {
+                        updateTurnMessage();
+                        gameState.gameActive = false;
+                        gameState.autoPlay = false;
+                        return;
+                    }
+
+                    // Now it's our turn to calculate
+                    gameState.myTurn = true;
+
+                    // Auto-play: request engine move
+                    if (gameState.autoPlay) {
+                        setTimeout(() => {
+                            requestEngineMove();
+                        }, 500); // Small delay for visual effect
+                    }
+                } else {
+                    debugLog('ERROR: Invalid move from opponent');
+                }
+            } else if (message.type === 'start-game') {
+                debugLog('Opponent started game');
+                // Sync game start
+            }
+        }
+
+        // Check if this browser has admin privileges
+        function toggleAdmin() {
+            // Toggle admin status
+            gameState.isAdmin = !gameState.isAdmin;
+
+            // Update title to show version only for admin users
+            const titleElement = document.getElementById('title');
+            if (titleElement) {
+                titleElement.textContent = gameState.isAdmin ? `Malcolm's Chess ${APP_VERSION}` : "Malcolm's Chess";
+                // Also update document title for browser tab
+                document.title = gameState.isAdmin ? `Malcolm's Chess ${APP_VERSION}` : "Malcolm's Chess";
+            }
+
+            // Show/hide all admin-only elements based on status
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(element => {
+                if (gameState.isAdmin) {
+                    element.style.display = element.id === 'gameModePanel' || element.id === 'settingsPanel' ? 'flex' : 'inline-block';
+                } else {
+                    element.style.display = 'none';
+                }
+            });
+
+            // Recalculate and update UI height to adjust chessboard size
+            setTimeout(() => {
+                updateUIHeight();
+            }, 100); // Small delay to allow DOM updates to complete
+
+            debugLog(gameState.isAdmin ? 'Admin mode enabled' : 'Admin mode disabled');
+        }
+
+        // Initialize on load
+        // Warn before leaving page if game is active
+        window.addEventListener('beforeunload', (e) => {
+            if (gameState.gameActive) {
+                e.preventDefault();
+                e.returnValue = 'You have an active game. Your game will be saved and restored when you return.';
+                return e.returnValue;
+            }
+        });
+
+        window.onload = async () => {
+            // Complete progress bar
+            clearInterval(progressInterval);
+            const bar = document.getElementById('loading-bar');
+            const text = document.getElementById('loading-text');
+            if (bar) bar.style.width = '100%';
+            if (text) text.textContent = '100%';
+
+            // Hide loading screen after brief delay
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }, 300);
+
+            initBoard();
+            updateUIHeight();
+
+            // Resize chessboard to fit container precisely
+            // Call multiple times to ensure it works after all elements load
+            setTimeout(() => resizeChessboard(), 50);
+            setTimeout(() => resizeChessboard(), 200);
+            setTimeout(() => resizeChessboard(), 500);
+
+            window.addEventListener('resize', () => {
+                updateUIHeight();
+                resizeChessboard();
+            });
+
+            // Create session first
+            const sessionCreated = await createSession();
+            if (!sessionCreated) {
+                return; // Don't continue if session creation failed
+            }
+
+            // Start polling debug log state from server
+            startDebugLogPolling();
+
+            // Initialize Stockfish engine
+            initStockfish();
+
+            // Show initial message
+            updateMessage("Loading...");
+
+            // Try to restore saved game after a short delay (wait for Stockfish to be ready)
+            setTimeout(() => {
+                if (stockfishReady) {
+                    const restored = restoreGameState();
+                    if (restored) {
+                        updateMessage("Game restored! Your turn.");
+                    }
+                }
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
+

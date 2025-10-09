@@ -1,0 +1,7 @@
+ok tell me what you think about this approach:
+- we will use a real chunked approach. 
+- the entire html source will be read from a file on the SD Card, so the html will not have to be loaded into the esp32 memory.
+- The esp32 will send the html to the browser by reading small chunks of the html file that resides on the SD card.
+-A load progress bar (0% to 100%) will be dynamically displayed on the browser screen as chunks are successfully received.
+-once the entire html file has been received in the browser, the app should display normally.
+-this approach should free up a massive amount of esp32 memory, and allow html/javascript files to be almost any size (limited by SD Card space).

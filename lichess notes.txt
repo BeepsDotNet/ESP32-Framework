@@ -1,0 +1,114 @@
+# Lichess API Chess Game Flow Overview (Lichess Only - No Gemini)
+
+## Architecture
+- **ESP32** hosts web interface and proxies Lichess API calls
+- **Browser interface** (chess-app.html) renders board with drag-drop
+- **Lichess** manages everything: game state, AI opponent, move validation, clocks
+
+## Key API Endpoints (Board API - Regular Account)
+
+1. **Create AI Game**
+   - `POST /api/challenge/ai`
+   - Parameters: level (1-8), clock.limit, clock.increment, color (white/black)
+   - Returns: `gameId`
+
+2. **Stream Game State**
+   - `GET /api/board/game/stream/{gameId}`
+   - NDJSON stream - keeps connection open
+   - Receives events: gameFull, gameState, opponent moves
+
+3. **Make Move**
+   - `POST /api/board/game/{gameId}/move/{uci}`
+   - UCI format: e2e4, e7e8q (with promotion)
+
+---
+
+## Workflow: Human vs Lichess AI
+
+### Step 1: User Starts New Game
+- User clicks "New Game" button in chess-app.html
+- Browser sends request to ESP32
+- ESP32 calls: `POST /api/challenge/ai` with parameters:
+  ```
+  level=3 (AI difficulty 1-8)
+  clock.limit=600 (10 minutes)
+  clock.increment=0
+  color=white (user plays white)
+  ```
+- Receives: `gameId`
+
+### Step 2: ESP32 Opens Game Stream
+- ESP32 connects: `GET /api/board/game/stream/{gameId}`
+- Stream stays open, sends NDJSON events:
+  - `gameFull` - initial game state (FEN, time controls)
+  - `gameState` - move updates, clocks, game status
+- ESP32 forwards events to browser via SSE/WebSocket
+
+### Step 3: User Makes Move (White)
+- User drags piece on board
+- chess.js validates move legality
+- Browser sends UCI move to ESP32: `e2e4`
+- ESP32 sends: `POST /api/board/game/{gameId}/move/e2e4`
+- Board updates optimistically
+
+### Step 4: Lichess AI Responds (Black)
+- Stream receives `gameState` event with AI's move
+- ESP32 forwards to browser
+- Browser updates board with Black's move
+- User's turn again
+
+### Step 5: Game Loop
+Repeat steps 3-4 until:
+- Checkmate
+- Stalemate
+- Resignation
+- Time runs out
+
+---
+
+## What ESP32 Does
+
+1. **Proxy API calls** - keeps Lichess token secure server-side
+2. **Stream relay** - convert NDJSON stream to SSE for browser
+3. **Move submission** - POST user moves to Lichess
+4. **No chess logic** - Lichess handles all validation, AI, rules
+
+---
+
+## What Browser Does (chess-app.html)
+
+1. **Render board** - visual chessboard with drag-drop
+2. **Move validation** - chess.js checks legality before sending
+3. **Display updates** - apply opponent moves from stream
+4. **Show clocks** - display time remaining from stream events
+5. **Game controls** - New Game, Resign, Request Draw buttons
+
+---
+
+## Required Implementation
+
+### ESP32 needs:
+1. HTTP POST to `/api/challenge/ai` (create game)
+2. HTTP GET to `/api/board/game/stream/{gameId}` (NDJSON parser)
+3. HTTP POST to `/api/board/game/{gameId}/move/{uci}` (submit moves)
+4. SSE/WebSocket to browser (relay stream events)
+
+### Browser needs:
+1. Drag-drop chessboard UI
+2. chess.js for local move validation
+3. EventSource to receive game updates from ESP32
+4. UI controls (New Game, Resign, etc.)
+
+---
+
+**This is a pure human-vs-AI setup where the user plays against Lichess's engine, with ESP32 just proxying the API calls.**
+
+## Required Token Scopes
+- `board:play` - for making moves
+- `challenge:write` - for starting AI games
+
+## Important Notes
+- The Lichess account is NOT a bot account (uses Board API, not Bot API)
+- Token must be kept server-side on ESP32 for security
+- Stream connection stays open during entire game (NDJSON format)
+- All move validation and game logic handled by Lichess server

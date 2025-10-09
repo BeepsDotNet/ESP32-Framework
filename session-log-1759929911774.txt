@@ -1,0 +1,110 @@
+Session Control Log
+Exported: 10/8/2025, 9:25:11 AM
+Total Messages: 105
+================================================================================
+
+[9:24:36 AM] FAST CHUNK: File opened, size: 105238 bytes
+[9:24:36 AM] FAST CHUNK: Skipping fast chunk, will stream file directly
+[9:24:36 AM] CHUNK 0: Read 5615 bytes (offset: 5615/105238)
+[9:24:36 AM] CHUNK 5615: Read 4300 bytes (offset: 9915/105238)
+[9:24:36 AM] CHUNK 9915: Read 1444 bytes (offset: 11359/105238)
+[9:24:36 AM] CHUNK 11359: Read 4300 bytes (offset: 15659/105238)
+[9:24:36 AM] CHUNK 15659: Read 1444 bytes (offset: 17103/105238)
+[9:24:36 AM] CHUNK 17103: Read 1428 bytes (offset: 18531/105238)
+[9:24:36 AM] CHUNK 18531: Read 2864 bytes (offset: 21395/105238)
+[9:24:36 AM] CHUNK 21395: Read 2880 bytes (offset: 24275/105238)
+[9:24:36 AM] CHUNK 24275: Read 1428 bytes (offset: 25703/105238)
+[9:24:36 AM] CHUNK 25703: Read 4316 bytes (offset: 30019/105238)
+[9:24:36 AM] CHUNK 30019: Read 1428 bytes (offset: 31447/105238)
+[9:24:36 AM] CHUNK 31447: Read 4316 bytes (offset: 35763/105238)
+[9:24:36 AM] CHUNK 35763: Read 1428 bytes (offset: 37191/105238)
+[9:24:36 AM] CHUNK 37191: Read 4316 bytes (offset: 41507/105238)
+[9:24:36 AM] CHUNK 41507: Read 1428 bytes (offset: 42935/105238)
+[9:24:36 AM] CHUNK 42935: Read 5752 bytes (offset: 48687/105238)
+[9:24:36 AM] CHUNK 48687: Read 5736 bytes (offset: 54423/105238)
+[9:24:36 AM] CHUNK 54423: Read 8 bytes (offset: 54431/105238)
+[9:24:36 AM] CHUNK 54431: Read 5736 bytes (offset: 60167/105238)
+[9:24:36 AM] CHUNK 60167: Read 8 bytes (offset: 60175/105238)
+[9:24:36 AM] CHUNK 60175: Read 5736 bytes (offset: 65911/105238)
+[9:24:36 AM] CHUNK 65911: Read 8 bytes (offset: 65919/105238)
+[9:24:37 AM] CHUNK 65919: Read 5736 bytes (offset: 71655/105238)
+[9:24:37 AM] CHUNK 71655: Read 8 bytes (offset: 71663/105238)
+[9:24:37 AM] CHUNK 71663: Read 5736 bytes (offset: 77399/105238)
+[9:24:37 AM] CHUNK 77399: Read 8 bytes (offset: 77407/105238)
+[9:24:37 AM] CHUNK 77407: Read 5736 bytes (offset: 83143/105238)
+[9:24:37 AM] CHUNK 83143: Read 8 bytes (offset: 83151/105238)
+[9:24:37 AM] CHUNK 83151: Read 5736 bytes (offset: 88887/105238)
+[9:24:37 AM] CHUNK 88887: Read 8 bytes (offset: 88895/105238)
+[9:24:37 AM] CHUNK 88895: Read 5736 bytes (offset: 94631/105238)
+[9:24:37 AM] CHUNK 94631: Read 8 bytes (offset: 94639/105238)
+[9:24:37 AM] CHUNK 94639: Read 5736 bytes (offset: 100375/105238)
+[9:24:37 AM] CHUNK 100375: Read 8 bytes (offset: 100383/105238)
+[9:24:37 AM] CHUNK 100383: Read 4855 bytes (offset: 105238/105238)
+[9:24:37 AM] CHUNK: File not open, ending stream
+[9:24:37 AM] Session 0000cc9cc4a4: LichessAPI instance created
+[9:24:37 AM] Session created: 0000cc9cc4a4 from IP 192.168.1.197 (total sessions: 2)
+[9:24:37 AM] Session created: 0000cc9cc4a4 for IP: 192.168.1.197
+[9:24:42 AM] Session 0000cc9cc4a4: Debug log enabled
+[9:24:45 AM] Refresh command flagged for session 0000cc9cc4a4 (IP: 192.168.1.197)
+[9:24:47 AM] [9:24:47 AM.863] [192.168.1.197] Refresh command received from admin - reloading page...
+[9:24:47 AM] FAST CHUNK: File opened, size: 105238 bytes
+[9:24:47 AM] FAST CHUNK: Skipping fast chunk, will stream file directly
+[9:24:47 AM] CHUNK 0: Read 5615 bytes (offset: 5615/105238)
+[9:24:48 AM] CHUNK 5615: Read 2864 bytes (offset: 8479/105238)
+[9:24:48 AM] CHUNK 8479: Read 2880 bytes (offset: 11359/105238)
+[9:24:48 AM] CHUNK 11359: Read 2864 bytes (offset: 14223/105238)
+[9:24:48 AM] CHUNK 14223: Read 2880 bytes (offset: 17103/105238)
+[9:24:48 AM] CHUNK 17103: Read 2864 bytes (offset: 19967/105238)
+[9:24:48 AM] CHUNK 19967: Read 2880 bytes (offset: 22847/105238)
+[9:24:48 AM] CHUNK 22847: Read 2864 bytes (offset: 25711/105238)
+[9:24:48 AM] CHUNK 25711: Read 2880 bytes (offset: 28591/105238)
+[9:24:48 AM] CHUNK 28591: Read 2864 bytes (offset: 31455/105238)
+[9:24:48 AM] CHUNK 31455: Read 2880 bytes (offset: 34335/105238)
+[9:24:48 AM] CHUNK 34335: Read 2864 bytes (offset: 37199/105238)
+[9:24:48 AM] CHUNK 37199: Read 2880 bytes (offset: 40079/105238)
+[9:24:48 AM] CHUNK 40079: Read 2864 bytes (offset: 42943/105238)
+[9:24:48 AM] CHUNK 42943: Read 2880 bytes (offset: 45823/105238)
+[9:24:48 AM] CHUNK 45823: Read 2864 bytes (offset: 48687/105238)
+[9:24:48 AM] CHUNK 48687: Read 2880 bytes (offset: 51567/105238)
+[9:24:48 AM] CHUNK 51567: Read 2864 bytes (offset: 54431/105238)
+[9:24:48 AM] CHUNK 54431: Read 2880 bytes (offset: 57311/105238)
+[9:24:48 AM] CHUNK 57311: Read 2864 bytes (offset: 60175/105238)
+[9:24:48 AM] CHUNK 60175: Read 2880 bytes (offset: 63055/105238)
+[9:24:48 AM] CHUNK 63055: Read 2864 bytes (offset: 65919/105238)
+[9:24:48 AM] CHUNK 65919: Read 2880 bytes (offset: 68799/105238)
+[9:24:48 AM] CHUNK 68799: Read 2864 bytes (offset: 71663/105238)
+[9:24:48 AM] CHUNK 71663: Read 2880 bytes (offset: 74543/105238)
+[9:24:48 AM] CHUNK 74543: Read 2864 bytes (offset: 77407/105238)
+[9:24:48 AM] CHUNK 77407: Read 2880 bytes (offset: 80287/105238)
+[9:24:48 AM] CHUNK 80287: Read 2864 bytes (offset: 83151/105238)
+[9:24:48 AM] CHUNK 83151: Read 2880 bytes (offset: 86031/105238)
+[9:24:48 AM] CHUNK 86031: Read 2864 bytes (offset: 88895/105238)
+[9:24:48 AM] CHUNK 88895: Read 2880 bytes (offset: 91775/105238)
+[9:24:48 AM] CHUNK 91775: Read 2864 bytes (offset: 94639/105238)
+[9:24:48 AM] CHUNK 94639: Read 2880 bytes (offset: 97519/105238)
+[9:24:48 AM] CHUNK 97519: Read 5752 bytes (offset: 103271/105238)
+[9:24:48 AM] CHUNK 103271: Read 1967 bytes (offset: 105238/105238)
+[9:24:48 AM] CHUNK: File not open, ending stream
+[9:24:49 AM] [9:24:49 AM.070] [192.168.1.197] [ENGINE] id name Stockfish 2019-08-15 64 POPCNT Multi-Variant
+[9:24:49 AM] [9:24:49 AM.070] [192.168.1.197] [ENGINE] id author D. Dugovic, F. Fichter et al.
+[9:24:49 AM] [9:24:49 AM.071] [192.168.1.197] [ENGINE]
+[9:24:49 AM] [9:24:49 AM.072] [192.168.1.197] [ENGINE] option name Debug Log File type string default
+[9:24:49 AM] [9:24:49 AM.072] [192.168.1.197] [ENGINE] option name Contempt type spin default 24 min -100 max 100
+[9:24:49 AM] [9:24:49 AM.073] [192.168.1.197] [ENGINE] option name Analysis Contempt type combo default Both var Both var Off var White var Black
+[9:24:49 AM] [9:24:49 AM.073] [192.168.1.197] [ENGINE] option name Threads type spin default 1 min 1 max 1
+[9:24:49 AM] [9:24:49 AM.073] [192.168.1.197] [ENGINE] option name Hash type spin default 16 min 16 max 16
+[9:24:49 AM] [9:24:49 AM.074] [192.168.1.197] [ENGINE] option name Clear Hash type button
+[9:24:49 AM] [9:24:49 AM.074] [192.168.1.197] [ENGINE] option name Ponder type check default false
+[9:24:49 AM] [9:24:49 AM.075] [192.168.1.197] [ENGINE] option name MultiPV type spin default 1 min 1 max 500
+[9:24:49 AM] [9:24:49 AM.075] [192.168.1.197] [ENGINE] option name Skill Level type spin default 20 min 0 max 20
+[9:24:49 AM] [9:24:49 AM.075] [192.168.1.197] [ENGINE] option name Move Overhead type spin default 30 min 0 max 5000
+[9:24:49 AM] [9:24:49 AM.076] [192.168.1.197] [ENGINE] option name Minimum Thinking Time type spin default 20 min 0 max 5000
+[9:24:49 AM] [9:24:49 AM.076] [192.168.1.197] [ENGINE] option name Slow Mover type spin default 84 min 10 max 1000
+[9:24:49 AM] [9:24:49 AM.076] [192.168.1.197] [ENGINE] option name nodestime type spin default 0 min 0 max 10000
+[9:24:49 AM] [9:24:49 AM.077] [192.168.1.197] [ENGINE] option name UCI_Chess960 type check default false
+[9:24:49 AM] [9:24:49 AM.077] [192.168.1.197] [ENGINE] option name UCI_Variant type combo default chess var chess var giveaway var atomic var crazyhouse var horde var kingofthehill var racingkings var 3check
+[9:24:49 AM] [9:24:49 AM.078] [192.168.1.197] [ENGINE] option name UCI_AnalyseMode type check default false
+[9:24:49 AM] [9:24:49 AM.078] [192.168.1.197] [ENGINE] uciok
+[9:24:50 AM] [9:24:49 AM.079] [192.168.1.197] [ENGINE] readyok
+[9:24:50 AM] [9:24:49 AM.079] [192.168.1.197] Stockfish engine ready
+[9:24:51 AM] [9:24:51 AM.023] [192.168.1.197] No saved game state found

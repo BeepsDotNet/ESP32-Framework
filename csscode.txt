@@ -1,0 +1,62 @@
+/* 1) Global resets: no side gaps, no horizontal scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden; /* only blocks horizontal scroll */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2) Top bars: always visible */
+.button-bar {
+  position: sticky;       /* stays pinned at the top */
+  top: 0;
+  z-index: 10;
+  background: #fff;       /* ensure content below doesn't show through */
+}
+
+.move-message-container {
+  /* optional: make this sticky too if you want it always visible */
+  /* position: sticky; top: var(--button-bar-h, 48px); z-index: 9; background: #fff; */
+}
+
+/* 3) Layout area below the top bars */
+.chess-container {
+  flex: 1 1 auto;         /* grows to fill remaining vertical space */
+  display: flex;
+  align-items: center;    /* vertical centering of the board within remaining space */
+  justify-content: center;
+  margin: 0;
+  padding: 0 0 12px 0;    /* small bottom breathing room */
+}
+
+/* 4) Chessboard: edge-to-edge width but never full-screen height */
+:root {
+  /* Reserve some guaranteed space for the top UI so the board never fills the screen.
+     Adjust this if your top bars are taller. */
+  --top-reserved: 96px;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 0;
+  border: 2px solid #4CAF50;
+  box-sizing: border-box;
+
+  /* Full width (edge-to-edge) without using 100vw (avoids scrollbar-width issue) */
+  width: 100%;
+
+  /* Keep the board square, but cap its height so it never takes the full screen */
+  aspect-ratio: 1 / 1;
+  max-height: calc(100svh - var(--top-reserved)); /* leaves space for the top UI */
+  max-width: min(100%, calc(100svh - var(--top-reserved))); /* keeps squares square when height is the limiter */
+}
+
+/* Optional: make sure the page never looks cramped on very small heights */
+@media (max-height: 560px) {
+  :root { --top-reserved: 120px; }
+}

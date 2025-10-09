@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light only">
+    <title>Malcolm's Chess v4.3 - Lichess</title>
+    <script src="https://cdn.jsdelivr.net/npm/chess.js@0.12.0/chess.min.js"></script>
+    <style>
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .button-bar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #2a2a2a;
+            padding: 4px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .button-bar h1 {
+            color: #4CAF50;
+            margin-right: 30px;
+            font-size: 24px;
+        }
+
+        .button-bar button {
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .button-bar button:nth-of-type(1) { background-color: rgb(128,0,128); }
+        .button-bar button:nth-of-type(2) { background-color: rgb(139,0,0); }
+        .button-bar button:hover { opacity: 0.8; }
+
+        .move-message-container {
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+            border-bottom: 2px solid #4CAF50;
+            margin-bottom: 2px;
+            height: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .message-content {
+            color: #4CAF50;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .chess-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ui-height: 0px;
+        }
+
+        .chessboard {
+            border: 3px solid #000080;
+            background: transparent;
+            box-sizing: border-box;
+            margin: 0;
+            width: min(100vw, calc(100vh - var(--ui-height)));
+            height: min(100vw, calc(100vh - var(--ui-height)));
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 0;
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            box-sizing: border-box;
+            aspect-ratio: 1;
+            overflow: hidden;
+        }
+
+        .light { background: #000000; }
+        .dark { background: #4169e1; }
+
+        .selected {
+            box-shadow: inset 0 0 0 4px #4CAF50 !important;
+        }
+
+        .piece {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+        }
+
+        .piece svg {
+            width: 70%;
+            height: 70%;
+            pointer-events: none;
+        }
+
+        svg {
+            color-scheme: light only !important;
+            forced-color-adjust: none !important;
+        }
+
+        svg path, svg g {
+            color-scheme: light only !important;
+            forced-color-adjust: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-bar">
+        <h1>Malcolm's Chess v4.3 - Lichess</h1>
+        <button onclick="startNewGame()">New Game</button>
+        <button onclick="resignGame()">Resign</button>
+    </div>
+
+    <div class="move-message-container">
+        <div class="message-content" id="moveMessage">Click "New Game" to start</div>
+    </div>
+
+    <div class="chess-container">
+        <div class="chessboard" id="chessboard"></div>
+    </div>
+
+    <script>
+        // Initialize chess.js
+        const chess = new Chess();
+
+        // Game state
+        let gameState = {
+            gameId: null,
+            playerColor: 'white',
+            gameActive: false,
+            selectedSquare: null,
+            eventSource: null
+        };
+
+        // Piece SVG definitions
+        const pieceSVGs = {
+            'p': '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"/></svg>',
+            'r': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none"/></g></svg>',
+            'n': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M22,10 C32.5,11 38.5,18 38,39 L15,39 C15,30 25,32.5 23,18"/><path d="M24,18 C24.38,20.91 18.45,25.37 16,27 C13,29 13.18,31.34 11,31 C9.958,30.06 12.41,27.96 11,28 C10,28 11.19,29.23 10,30 C9,30 5.997,31 6,26 C6,24 12,14 12,14 C12,14 13.89,12.1 14,10.5 C13.27,9.506 13.5,8.5 13.5,7.5 C14.5,6.5 16.5,10 16.5,10 L18.5,10 C18.5,10 19.28,8.008 21,7 C22,7 22,10 22,10"/></g></svg>',
+            'b': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/></g></svg>',
+            'q': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><circle cx="6" cy="12" r="2.5"/><circle cx="14" cy="9" r="2.5"/><circle cx="22.5" cy="7.5" r="2.5"/><circle cx="31" cy="9" r="2.5"/><circle cx="39" cy="12" r="2.5"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-14V25L7 14l2 12zM9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/></g></svg>',
+            'k': '<svg viewBox="0 0 45 45"><g fill="__FILL__" stroke="__STROKE__" stroke-width="1.5"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z"/></g></svg>'
+        };
+
+        function getPieceSVG(piece) {
+            if (!piece) return '';
+            const pieceType = piece.type;
+            const color = piece.color === 'w' ? 'white' : 'black';
+            const fill = color === 'white' ? '#ffffff' : '#000000';
+            const stroke = color === 'white' ? '#000000' : '#ffffff';
+
+            let svg = pieceSVGs[pieceType] || '';
+            svg = svg.replace(/__FILL__/g, fill);
+            svg = svg.replace(/__STROKE__/g, stroke);
+            return svg;
+        }
+
+        function initBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.square = String.fromCharCode(97 + col) + (8 - row);
+                    square.onclick = () => handleSquareClick(row, col);
+                    board.appendChild(square);
+                }
+            }
+            updateBoardDisplay();
+        }
+
+        function updateBoardDisplay() {
+            const board = document.getElementById('chessboard');
+            const squares = board.children;
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const squareName = String.fromCharCode(97 + col) + (8 - row);
+                    const piece = chess.get(squareName);
+                    const index = row * 8 + col;
+
+                    if (piece) {
+                        squares[index].innerHTML = '<div class="piece">' + getPieceSVG(piece) + '</div>';
+                    } else {
+                        squares[index].innerHTML = '';
+                    }
+                }
+            }
+        }
+
+        function handleSquareClick(row, col) {
+            if (!gameState.gameActive) {
+                updateMessage("Start a new game first");
+                return;
+            }
+
+            const squareName = String.fromCharCode(97 + col) + (8 - row);
+
+            if (!gameState.selectedSquare) {
+                // Select piece
+                const piece = chess.get(squareName);
+                if (piece && piece.color === gameState.playerColor[0]) {
+                    gameState.selectedSquare = squareName;
+                    highlightSquare(row, col, true);
+                    updateMessage(`Selected ${squareName}. Click destination.`);
+                }
+            } else {
+                // Try to move
+                const from = gameState.selectedSquare;
+                const to = squareName;
+
+                clearHighlights();
+                gameState.selectedSquare = null;
+
+                if (from === to) {
+                    updateMessage("Move cancelled");
+                    return;
+                }
+
+                makeMove(from, to);
+            }
+        }
+
+        function highlightSquare(row, col, highlight) {
+            const board = document.getElementById('chessboard');
+            const index = row * 8 + col;
+            if (highlight) {
+                board.children[index].classList.add('selected');
+            } else {
+                board.children[index].classList.remove('selected');
+            }
+        }
+
+        function clearHighlights() {
+            const board = document.getElementById('chessboard');
+            for (let square of board.children) {
+                square.classList.remove('selected');
+            }
+        }
+
+        async function startNewGame() {
+            // If there's an active game, resign it first
+            if (gameState.gameActive) {
+                updateMessage("Resigning current game...");
+
+                try {
+                    // Close event stream first
+                    if (gameState.eventSource) {
+                        gameState.eventSource.close();
+                        gameState.eventSource = null;
+                    }
+
+                    // Resign the game
+                    await fetch('/api/lichess/resign', {method: 'POST'});
+
+                    // Wait a bit for cleanup
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    console.log("Error resigning previous game:", error);
+                }
+
+                gameState.gameActive = false;
+                gameState.gameId = null;
+            }
+
+            updateMessage("Creating game...");
+
+            try {
+                const response = await fetch('/api/lichess/create-game', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'level=3&time=600&increment=0&color=white'
+                });
+
+                const data = await response.json();
+
+                // Handle async game creation (HTTP 202)
+                if (response.status === 202 && data.status === 'creating') {
+                    updateMessage("Creating game (async)...");
+
+                    // Poll for game status
+                    let attempts = 0;
+                    const maxAttempts = 20; // 10 seconds max
+
+                    while (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        const statusResponse = await fetch('/api/lichess/status');
+                        const status = await statusResponse.json();
+
+                        if (status.gameActive && status.gameId) {
+                            gameState.gameId = status.gameId;
+                            gameState.playerColor = status.playerColor || 'white';
+                            gameState.gameActive = true;
+
+                            chess.reset();
+                            updateBoardDisplay();
+                            updateMessage("Game started! You are " + gameState.playerColor + ". Your move.");
+
+                            // Start listening to game stream
+                            startEventStream();
+                            return;
+                        }
+
+                        attempts++;
+                    }
+
+                    updateMessage("Error: Game creation timed out");
+                    return;
+                }
+
+                // Handle immediate response (old sync behavior or error)
+                if (data.gameId) {
+                    gameState.gameId = data.gameId;
+                    gameState.playerColor = data.color || 'white';
+                    gameState.gameActive = true;
+
+                    chess.reset();
+                    updateBoardDisplay();
+                    updateMessage("Game started! You are " + gameState.playerColor + ". Your move.");
+
+                    // Start listening to game stream
+                    startEventStream();
+                } else if (data.error) {
+                    updateMessage("Error: " + data.error);
+                } else {
+                    updateMessage("Error: Failed to create game");
+                }
+            } catch (error) {
+                updateMessage("Error creating game: " + error.message);
+            }
+        }
+
+        function startEventStream() {
+            if (gameState.eventSource) {
+                gameState.eventSource.close();
+            }
+
+            gameState.eventSource = new EventSource('/api/lichess/stream');
+
+            gameState.eventSource.addEventListener('lichess-event', (e) => {
+                try {
+                    const event = JSON.parse(e.data);
+                    handleGameEvent(event);
+                } catch (error) {
+                    console.error('Error parsing event:', error);
+                }
+            });
+
+            gameState.eventSource.onerror = () => {
+                console.error('Event stream error');
+            };
+        }
+
+        function handleGameEvent(event) {
+            console.log('Game event:', event);
+
+            if (event.type === 'gameFull') {
+                // Initial game state
+                if (event.state && event.state.moves) {
+                    const moves = event.state.moves.split(' ');
+                    chess.reset();
+                    for (let move of moves) {
+                        if (move) {
+                            chess.move(move, {sloppy: true});
+                        }
+                    }
+                    updateBoardDisplay();
+                }
+                updateTurnMessage();
+            } else if (event.type === 'gameState') {
+                // Game state update (AI moved)
+                if (event.moves) {
+                    const moves = event.moves.split(' ');
+                    chess.reset();
+                    for (let move of moves) {
+                        if (move) {
+                            chess.move(move, {sloppy: true});
+                        }
+                    }
+                    updateBoardDisplay();
+                    updateTurnMessage();
+                }
+
+                if (event.status && event.status !== 'started') {
+                    gameState.gameActive = false;
+                    updateMessage("Game over: " + event.status);
+                }
+            }
+        }
+
+        async function makeMove(from, to) {
+            // Try move with chess.js first
+            let move = chess.move({from: from, to: to, promotion: 'q'});
+
+            if (!move) {
+                updateMessage("Illegal move");
+                return;
+            }
+
+            // Convert to UCI
+            const uci = from + to + (move.promotion ? move.promotion : '');
+
+            // Update display optimistically
+            updateBoardDisplay();
+            updateMessage("Waiting for opponent...");
+
+            try {
+                const response = await fetch('/api/lichess/move', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'move=' + encodeURIComponent(uci)
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    // Revert move
+                    chess.undo();
+                    updateBoardDisplay();
+                    updateMessage("Move rejected: " + (data.error || "Invalid move"));
+                }
+            } catch (error) {
+                chess.undo();
+                updateBoardDisplay();
+                updateMessage("Error: " + error.message);
+            }
+        }
+
+        async function resignGame() {
+            if (!gameState.gameActive) {
+                updateMessage("No active game");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to resign?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lichess/resign', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    gameState.gameActive = false;
+                    if (gameState.eventSource) {
+                        gameState.eventSource.close();
+                    }
+                    updateMessage("Game resigned");
+                } else {
+                    updateMessage("Error resigning: " + (data.error || "Unknown error"));
+                }
+            } catch (error) {
+                updateMessage("Error: " + error.message);
+            }
+        }
+
+        function updateTurnMessage() {
+            const turn = chess.turn();
+            const playerTurn = (turn === 'w' && gameState.playerColor === 'white') ||
+                              (turn === 'b' && gameState.playerColor === 'black');
+
+            if (playerTurn) {
+                updateMessage("Your turn (" + gameState.playerColor + ")");
+            } else {
+                updateMessage("Opponent's turn...");
+            }
+
+            if (chess.in_check()) {
+                updateMessage("CHECK! " + (playerTurn ? "Your turn" : "Opponent's turn"));
+            }
+
+            if (chess.game_over()) {
+                gameState.gameActive = false;
+                if (chess.in_checkmate()) {
+                    updateMessage("CHECKMATE! " + (playerTurn ? "You lost" : "You won!"));
+                } else if (chess.in_stalemate()) {
+                    updateMessage("STALEMATE - Draw");
+                } else if (chess.in_draw()) {
+                    updateMessage("DRAW");
+                }
+            }
+        }
+
+        function updateMessage(msg) {
+            document.getElementById('moveMessage').textContent = msg;
+        }
+
+        function updateUIHeight() {
+            const buttonBar = document.querySelector('.button-bar');
+            const messageContainer = document.querySelector('.move-message-container');
+            const chessContainer = document.querySelector('.chess-container');
+
+            if (buttonBar && messageContainer && chessContainer) {
+                const chessContainerTop = chessContainer.offsetTop;
+                const reservedHeight = chessContainerTop + 10;
+                document.documentElement.style.setProperty('--ui-height', `${reservedHeight}px`);
+            }
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            initBoard();
+            updateUIHeight();
+            window.addEventListener('resize', updateUIHeight);
+            updateMessage("Click 'New Game' to play against Lichess AI");
+        };
+    </script>
+</body>
+</html>

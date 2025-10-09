@@ -1,0 +1,132 @@
+[5:31:12 AM.328] Engine move: a6b5
+[5:31:15 AM.639] Player move: b1b5
+[5:31:15 AM.644] Requesting engine move (depth 10)
+[5:31:15 AM.649] [ENGINE] info depth 1 seldepth 1 multipv 1 score cp 646 nodes 56 nps 28000 tbhits 0 time 2 pv a8a4
+[5:31:15 AM.650] [ENGINE] info depth 2 seldepth 2 multipv 1 score cp 737 nodes 102 nps 51000 tbhits 0 time 2 pv a8a4 b5b7 a4a2
+[5:31:15 AM.651] [ENGINE] info depth 3 seldepth 3 multipv 1 score cp 737 nodes 148 nps 74000 tbhits 0 time 2 pv a8a4 b5b7 a4a2
+[5:31:15 AM.652] [ENGINE] info depth 4 seldepth 4 multipv 1 score cp 725 nodes 217 nps 72333 tbhits 0 time 3 pv a8a4 b5b7 a4a2 f3d4 c6d4 d1d4
+[5:31:15 AM.653] [ENGINE] info depth 5 seldepth 5 multipv 1 score cp 623 nodes 676 nps 225333 tbhits 0 time 3 pv a8a4 a2c3 a4f4 b5b7 f4b4 b7b4
+[5:31:15 AM.654] [ENGINE] info depth 6 seldepth 6 multipv 1 score cp 623 nodes 991 nps 247750 tbhits 0 time 4 pv a8a4 a2c3 a4f4 b5b7 f4b4 b7b4
+[5:31:15 AM.656] [ENGINE] info depth 7 seldepth 7 multipv 1 score cp 623 nodes 1522 nps 304400 tbhits 0 time 5 pv a8a4 a2c3 a4f4 b5b7 f4b4 b7b4 e7b4
+[5:31:15 AM.660] [ENGINE] info depth 8 seldepth 9 multipv 1 score cp 604 nodes 2227 nps 371166 tbhits 0 time 6 pv a8a4 a2c3 a4f4 b5b7 d5d4 c3a4 g4f2 d1e1
+[5:31:15 AM.663] [ENGINE] info depth 9 seldepth 13 multipv 1 score cp 585 nodes 10223 nps 538052 tbhits 0 time 19 pv a8a4 a2c3 a4f4 b5b7 e7c5 d1e1 d7c8 b7b3 g4f2 c3b5
+[5:31:15 AM.687] [ENGINE] info depth 10 seldepth 14 multipv 1 score cp 549 nodes 35418 nps 823674 tbhits 0 time 43 pv g4f2 d1e1 d5d4 a4a5 b7b6 c1b2 b6a5 f1f2 e3f2 e1f2
+[5:31:15 AM.697] [ENGINE] bestmove g4f2 ponder d1e1
+[5:31:15 AM.697] Engine move: g4f2
+[5:31:32 AM.576] Player move: a2c3
+[5:31:32 AM.582] Requesting engine move (depth 10)
+[5:31:32 AM.587] [ENGINE] info depth 1 seldepth 1 multipv 1 score cp 1150 nodes 51 nps 25500 tbhits 0 time 2 pv f2d1 f1d1
+[5:31:32 AM.590] [ENGINE] info depth 3 seldepth 3 multipv 1 score cp 1114 nodes 168 nps 56000 tbhits 0 time 3 pv f2d1 f1d1 c6b4 b5b7 b4c2
+[5:31:32 AM.588] [ENGINE] info depth 2 seldepth 2 multipv 1 score cp 1150 nodes 100 nps 50000 tbhits 0 time 2 pv f2d1 f1d1
+[5:31:32 AM.591] [ENGINE] info depth 4 seldepth 4 multipv 1 score cp 1114 nodes 263 nps 87666 tbhits 0 time 3 pv f2d1 f1d1 c6b4 b5b7
+[5:31:32 AM.592] [ENGINE] info depth 5 seldepth 5 multipv 1 score cp 1114 nodes 363 nps 90750 tbhits 0 time 4 pv f2d1 f1d1 c6b4 b5b7 b4c2
+[5:31:32 AM.593] [ENGINE] info depth 6 seldepth 6 multipv 1 score cp 1145 nodes 485 nps 121250 tbhits 0 time 4 pv f2d1 f1d1 c6b4 b5b7 b4c2
+[5:31:32 AM.593] [ENGINE] info depth 7 seldepth 7 multipv 1 score cp 1195 nodes 800 nps 200000 tbhits 0 time 4 pv f2d1 e2d1 d5d4 c3e2 a8a4
+[5:31:32 AM.595] [ENGINE] info depth 8 seldepth 8 multipv 1 score cp 1165 nodes 1977 nps 329500 tbhits 0 time 6 pv f2d1 f1d1 c6b4 b5b7 d8c8 b7d7 c8d7 c1e3 b4c2
+[5:31:32 AM.596] [ENGINE] info depth 9 seldepth 12 multipv 1 score cp 1188 nodes 3065 nps 383125 tbhits 0 time 8 pv f2d1 f1d1 c6b4 b5b7 d8c8 b7d7 c8d7
+[5:31:32 AM.596] [ENGINE] info depth 10 seldepth 11 multipv 1 score cp 1198 nodes 4729 nps 472900 tbhits 0 time 10 pv f2d1 f1d1 c6b4 b5b7 d8c8 b7d7 c8d7 f3e5 d7a7
+[5:31:32 AM.602] [ENGINE] bestmove f2d1 ponder f1d1
+[5:31:32 AM.603] Engine move: f2d1
+[5:31:45 AM.832] Player move: f1d1
+[5:31:45 AM.838] Requesting engine move (depth 10)
+[5:31:45 AM.842] [ENGINE] info depth 1 seldepth 1 multipv 1 score cp 1198 nodes 55 nps 27500 tbhits 0 time 2 pv c6b4
+[5:31:45 AM.843] [ENGINE] info depth 2 seldepth 2 multipv 1 score cp 1198 nodes 108 nps 54000 tbhits 0 time 2 pv c6b4 b5b7
+[5:31:45 AM.846] [ENGINE] info depth 4 seldepth 4 multipv 1 score cp 1198 nodes 207 nps 69000 tbhits 0 time 3 pv c6b4 b5b7 d8c8 b7d7
+[5:31:45 AM.844] [ENGINE] info depth 3 seldepth 3 multipv 1 score cp 1198 nodes 152 nps 76000 tbhits 0 time 2 pv c6b4 b5b7 d8c8
+[5:31:45 AM.846] [ENGINE] info depth 5 seldepth 5 multipv 1 score cp 1198 nodes 274 nps 91333 tbhits 0 time 3 pv c6b4 b5b7 d8c8 b7d7 c8d7
+[5:31:45 AM.846] [ENGINE] info depth 6 seldepth 6 multipv 1 score cp 1198 nodes 428 nps 142666 tbhits 0 time 3 pv c6b4 b5b7 d8c8 b7d7 c8d7 f3e5
+[5:31:45 AM.847] [ENGINE] info depth 7 seldepth 7 multipv 1 score cp 1198 nodes 657 nps 219000 tbhits 0 time 3 pv c6b4 b5b7 d8c8 b7d7 c8d7 f3e5 d7a7
+[5:31:45 AM.848] [ENGINE] info depth 8 seldepth 8 multipv 1 score cp 1238 nodes 918 nps 229500 tbhits 0 time 4 pv c6b4 b5b7 d8c8 b7d7 c8d7 f3e5
+[5:31:45 AM.850] [ENGINE] info depth 9 seldepth 10 multipv 1 score cp 1240 nodes 2326 nps 387666 tbhits 0 time 6 pv c6b4 b5b7 d8c8 b7d7 c8d7 f3e5 d7c8 c1b2 b4c2 d1d3
+[5:31:45 AM.853] [ENGINE] info depth 10 seldepth 14 multipv 1 score cp 1219 nodes 11668 nps 729250 tbhits 0 time 16 pv c6b4 b5b7 d8c8 b7d7 c8d7 c1e3 d7c7 c3b5 c7c2 b5d4 c2a4 f3e5
+[5:31:45 AM.863] [ENGINE] bestmove c6b4 ponder b5b7
+[5:31:45 AM.864] Engine move: c6b4
+FAST CHUNK: File opened, size: 45278 bytes
+FAST CHUNK: Skipping fast chunk, will stream file directly
+CHUNK 0: Read 5615 bytes (offset: 5615/45278)
+CHUNK 5615: Read 4300 bytes (offset: 9915/45278)
+CHUNK 9915: Read 1444 bytes (offset: 11359/45278)
+CHUNK 11359: Read 4300 bytes (offset: 15659/45278)
+CHUNK 15659: Read 1428 bytes (offset: 17087/45278)
+CHUNK 17087: Read 4316 bytes (offset: 21403/45278)
+CHUNK 21403: Read 1428 bytes (offset: 22831/45278)
+CHUNK 22831: Read 4316 bytes (offset: 27147/45278)
+CHUNK 27147: Read 1428 bytes (offset: 28575/45278)
+CHUNK 28575: Read 4316 bytes (offset: 32891/45278)
+CHUNK 32891: Read 1428 bytes (offset: 34319/45278)
+CHUNK 34319: Read 4316 bytes (offset: 38635/45278)
+CHUNK 38635: Read 1428 bytes (offset: 40063/45278)
+CHUNK 40063: Read 4316 bytes (offset: 44379/45278)
+CHUNK 44379: Read 899 bytes (offset: 45278/45278)
+CHUNK: File not open, ending stream
+FAST CHUNK: File opened, size: 45278 bytes
+FAST CHUNK: Skipping fast chunk, will stream file directly
+CHUNK 0: Read 5615 bytes (offset: 5615/45278)
+CHUNK 5615: Read 1412 bytes (offset: 7027/45278)
+FAST CHUNK: File opened, size: 45278 bytes
+FAST CHUNK: Skipping fast chunk, will stream file directly
+CHUNK 0: Read 5615 bytes (offset: 5615/45278)
+CHUNK 5615: Read 1428 bytes (offset: 7043/45278)
+CHUNK 7043: Read 2864 bytes (offset: 9907/45278)
+CHUNK 9907: Read 1428 bytes (offset: 11335/45278)
+CHUNK 11335: Read 4316 bytes (offset: 15651/45278)
+CHUNK 15651: Read 1428 bytes (offset: 17079/45278)
+CHUNK 17079: Read 4316 bytes (offset: 21395/45278)
+CHUNK 21395: Read 1428 bytes (offset: 22823/45278)
+CHUNK 22823: Read 4316 bytes (offset: 27139/45278)
+CHUNK 27139: Read 1428 bytes (offset: 28567/45278)
+CHUNK 28567: Read 4316 bytes (offset: 32883/45278)
+CHUNK 32883: Read 1428 bytes (offset: 34311/45278)
+CHUNK 34311: Read 4316 bytes (offset: 38627/45278)
+CHUNK 38627: Read 1428 bytes (offset: 40055/45278)
+CHUNK 40055: Read 4316 bytes (offset: 44371/45278)
+CHUNK 44371: Read 907 bytes (offset: 45278/45278)
+CHUNK: File not open, ending stream
+FAST CHUNK: File opened, size: 45278 bytes
+FAST CHUNK: Skipping fast chunk, will stream file directly
+CHUNK 0: Read 5615 bytes (offset: 5615/45278)
+CHUNK 5615: Read 1428 bytes (offset: 7043/45278)
+CHUNK 7043: Read 4316 bytes (offset: 11359/45278)
+CHUNK 11359: Read 1428 bytes (offset: 12787/45278)
+CHUNK 12787: Read 4316 bytes (offset: 17103/45278)
+CHUNK 17103: Read 1428 bytes (offset: 18531/45278)
+CHUNK 18531: Read 4316 bytes (offset: 22847/45278)
+CHUNK 22847: Read 1428 bytes (offset: 24275/45278)
+CHUNK 24275: Read 4316 bytes (offset: 28591/45278)
+CHUNK 28591: Read 1428 bytes (offset: 30019/45278)
+CHUNK 30019: Read 4316 bytes (offset: 34335/45278)
+CHUNK 34335: Read 1428 bytes (offset: 35763/45278)
+CHUNK 35763: Read 4316 bytes (offset: 40079/45278)
+CHUNK 40079: Read 1428 bytes (offset: 41507/45278)
+CHUNK 41507: Read 3771 bytes (offset: 45278/45278)
+CHUNK: File not open, ending stream
+Session 017cb24ce680: LichessAPI instance created
+Session created: 017cb24ce680 from IP 192.168.1.197 (total sessions: 1)
+Session created: 017cb24ce680 for IP: 192.168.1.197
+[7:27:08 AM.651] Session created: 017cb24ce680 (IP: 192.168.1.197)
+[7:27:08 AM.706] Admin access granted for IP: 192.168.1.197
+[7:27:08 AM.706] Initializing Stockfish engine...
+[7:27:08 AM.707] Loading engine from ESP32 (WASM: true)
+[7:27:08 AM.720] [ENGINE] Stockfish 2019-08-15 64 POPCNT Multi-Variant by D. Dugovic, F. Fichter et al.
+[7:27:08 AM.747] [ENGINE] id name Stockfish 2019-08-15 64 POPCNT Multi-Variant
+[7:27:08 AM.748] [ENGINE] id author D. Dugovic, F. Fichter et al.
+[7:27:08 AM.748] [ENGINE] 
+[7:27:08 AM.748] [ENGINE] option name Debug Log File type string default 
+[7:27:08 AM.749] [ENGINE] option name Contempt type spin default 24 min -100 max 100
+[7:27:08 AM.749] [ENGINE] option name Analysis Contempt type combo default Both var Both var Off var White var Black
+[7:27:08 AM.749] [ENGINE] option name Threads type spin default 1 min 1 max 1
+[7:27:08 AM.749] [ENGINE] option name Hash type spin default 16 min 16 max 16
+[7:27:08 AM.750] [ENGINE] option name Clear Hash type button
+[7:27:08 AM.751] [ENGINE] option name Ponder type check default false
+[7:27:08 AM.751] [ENGINE] option name MultiPV type spin default 1 min 1 max 500
+[7:27:08 AM.751] [ENGINE] option name Skill Level type spin default 20 min 0 max 20
+[7:27:08 AM.752] [ENGINE] option name Move Overhead type spin default 30 min 0 max 5000
+[7:27:08 AM.752] [ENGINE] option name Minimum Thinking Time type spin default 20 min 0 max 5000
+[7:27:08 AM.752] [ENGINE] option name Slow Mover type spin default 84 min 10 max 1000
+[7:27:08 AM.752] [ENGINE] option name nodestime type spin default 0 min 0 max 10000
+[7:27:08 AM.753] [ENGINE] option name UCI_Chess960 type check default false
+[7:27:08 AM.753] [ENGINE] option name UCI_Variant type combo default chess var chess var giveaway var atomic var crazyhouse var horde var kingofthehill var racingkings var 3check
+[7:27:08 AM.753] [ENGINE] option name UCI_AnalyseMode type check default false
+[7:27:08 AM.753] [ENGINE] uciok
+[7:27:08 AM.755] [ENGINE] readyok
+[7:27:08 AM.755] Stockfish engine ready

@@ -1,0 +1,6 @@
+  For development:
+  - When I update the chess-app.html file, you just run python upload_html.py
+  - ESP32 will serve the updated version immediately
+  - No recompilation needed!
+
+  looks good. Now lets save this version to git and publish it, create a new branch v3.0.

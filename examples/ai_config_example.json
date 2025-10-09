@@ -1,0 +1,23 @@
+{
+  "ai1": {
+    "name": "ChatGPT",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "your-openai-api-key-here",
+    "model": "gpt-3.5-turbo",
+    "headers": {
+      "Authorization": "Bearer your-openai-api-key-here",
+      "Content-Type": "application/json"
+    }
+  },
+  "ai2": {
+    "name": "Claude",
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "apiKey": "your-anthropic-api-key-here",
+    "model": "claude-3-sonnet-20240229",
+    "headers": {
+      "x-api-key": "your-anthropic-api-key-here",
+      "anthropic-version": "2023-06-01",
+      "Content-Type": "application/json"
+    }
+  }
+}

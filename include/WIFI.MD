@@ -1,0 +1,2 @@
+ssid = "dRouter"
+password = "WEWENTTOTHESTORE"

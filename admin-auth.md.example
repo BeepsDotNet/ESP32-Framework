@@ -1,0 +1,19 @@
+# Admin Authentication File
+# Place this file as /admin-auth.md on the ESP32 SD card
+#
+# List one IP address per line
+# Lines starting with # are comments and will be ignored
+# Empty lines are ignored
+#
+# Only IPs listed here will see the admin buttons:
+# - Debug Log
+# - Eject SD Card
+# - Reboot ESP32
+
+# Example IPs (replace with your actual IPs):
+192.168.1.100
+192.168.1.105
+
+# You can add multiple IPs:
+# 192.168.1.200
+# 10.0.0.50
